@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.cliff</groupId>
+    <artifactId>memeify</artifactId>
+    <version>0.1</version>
+    <!-- pom indicates this project will contain maven submodules -->
+    <packaging>pom</packaging>
+
+    <name>memeify</name>
+    <description>an example website that adds text to images, powered by AWS, vue.js and vuetify</description>
+
+    <properties>
+        <main.basedir>${project.basedir}</main.basedir>
+    </properties>
+
+    <modules>
+        <module>lambdas</module>
+    </modules>
+
+</project>

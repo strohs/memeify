@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MemeifyS3PutLambda:
+    Properties:
+      CodeUri: s3://strohs-ci-cd/944caa0dacfb9f1a0d075e8e13757aab
+      Events:
+        S3PutEvent:
+          Properties:
+            Bucket: strohs-memeify
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                - Name: prefix
+                  Value: in/
+          Type: S3
+      Handler: com.cliff.memeify.Handler
+      MemorySize: 256
+      Role: ROLE_ARN_HERE
+      Runtime: java8
+      Timeout: 30
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31

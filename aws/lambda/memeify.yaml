@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  MemeifyS3PutLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.cliff.memeify.Handler
+      Runtime: java8
+      Timeout: 30
+      MemorySize: 256
+      CodeUri: ../../lambdas/target/memeify-lambdas-0.1.jar
+      # ARN of an IAM role to use as this function's execution role.
+      # If omitted, a default role is created for this function.
+      Role: ROLE_ARN_HERE
+      # the events that trigger this lambda function
+      Events:
+        S3PutEvent:
+          Type: S3
+          Properties:
+            Bucket: 'strohs-memeify'
+            Events: 's3:ObjectCreated:*'
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: in/

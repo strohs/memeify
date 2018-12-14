@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Root stack that creates the Memeify S3 output bucket, Memeify Lambda function, and API Gateway POST method
+  that receives uploaded images.
+Parameters:
+  LambdaCodeBucket:
+    Type: String
+    Description: "name of S3 bucket containing the memeify lambda code (.jar)"
+  LambdaCodeKey:
+    Type: String
+    Default: "memeify-lambdas-0.1.jar"
+
+Resources:
+  # this is the bucket that stores memeified images
+  ImageOutputBucket:
+    Type: AWS::S3::Bucket
+
+  MemeifyLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.cliff.memeify.Handler::handleRequest
+      Runtime: java8
+      Timeout: 30
+      MemorySize: 256
+      CodeUri:
+        Bucket: !Ref LambdaCodeBucket
+        Key: !Ref LambdaCodeKey
+      Policies:
+        # Give this lambda write access to cloudwatch logs
+        - AWSLambdaBasicExecutionRole
+        # Gives CRUD permissions to objects in the S3 Bucket
+        - S3CrudPolicy:
+            BucketName: !Ref ImageOutputBucket
+      Environment:
+        Variables:
+          OUTPUT_BUCKET_NAME: !Ref ImageOutputBucket
+          MAX_IMAGE_SIZE_MB: 5
+      # the events that trigger this lambda function, this function will be triggered by a POST request to API Gateway
+      Events:
+        MemeifyApiPost:
+          Type: Api
+          Properties:
+            Path: /memeify
+            Method: Post
+
+Outputs:
+  LambdaArn:
+    Value: !GetAtt MemeifyLambda.Arn
+  OutputBucketName:
+    Value: !Ref ImageOutputBucket
+
