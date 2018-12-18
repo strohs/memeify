@@ -24,6 +24,9 @@ import kotlin.streams.asSequence
  * preserve the image bytes. The use of BASE64 encoding will increase the Body size by about 33%, which can limit the
  * size of images you send. In addition, API Gateway imposes a 10MB limit on request sizes
  *
+ * @returns an APIGatewayResponseEvent with the "body" field containing the following JSON string:
+ *   { "imageUrl" : "https://s3-REGION-BUCKET-KEY-WILL-BE-HERE" }
+ *
  * Environment Variables:
  *  the following two environment variables should be set for this lambda:
  *    OUTPUT_BUCKET_NAME = name of the S3 bucket where image files will be written
