@@ -5,8 +5,8 @@ import java.io.File
 import java.util.*
 
 /**
- * Parse the multipart form-data body that was submitted. This object uses a customized Apache Commons FileUpload to
- * extract the various parts of the upload
+ * uses MultipartFormParser to parse the form-data body that was submitted, and then performs some validation on
+ * the submitted parameters
  *
  * @author Cliff
  */
@@ -39,9 +39,9 @@ object MemeifyParser {
 
         // API Gateway will Base64 encode the entire body so lets decode it here into a ByteArray
         val bodyBytes = Base64.getDecoder().decode(input.body)
-        println("decoded request body size=${bodyBytes.size}")
+        //println("decoded request:${bodyBytes.toString(Charsets.ISO_8859_1)}")
 
-        // use our customized apache commons file upload to parse the various multipart fields
+        // use our customized apache commons file upload to parse the fields from the body
         val mfp = MultipartFormParser(boundary, bodyBytes)
 
         // verify required fields are present
@@ -49,7 +49,7 @@ object MemeifyParser {
         if (!mfp.paramsMap.containsKey(Handler.BOT_TEXT_KEY)) throw IllegalArgumentException("botText field was not sent as part of the request")
         val imageSet = mfp.filesMap.keys
         if (imageSet.size != 1) throw IllegalArgumentException("exactly one image should be sent in the request, ${imageSet.size} image(s) were found")
-        // validate a valid file type was sent
+        // make sure a valid file type was sent
         val fileExt = File(mfp.filesMap.keys.first()).extension
         if (!validFileTypes.contains(fileExt)) throw IllegalArgumentException("only .jpg and .png image are supported, posted image type was $fileExt")
 

@@ -70,7 +70,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
             response = buildResponse(
                     200,
                     null,
-                    mapper.writeValueAsString(MemeifyResponse(savedFilename, null)))
+                    mapper.writeValueAsString( MemeifyResponse( s3Utils.buildS3PathUrl(outBucket,savedFilename), null)))
 
         } catch (ex: IllegalArgumentException) {
             response = buildResponse(

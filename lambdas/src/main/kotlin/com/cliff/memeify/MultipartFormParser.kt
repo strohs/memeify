@@ -25,7 +25,7 @@ class MultipartFormParser(val boundary: String, val body: ByteArray): UploadCont
     val filesMap = mutableMapOf<String, ByteArray>()
 
     init {
-        // parse out form parameters
+        // parse form parameters from the body
         val factory: FileItemFactory = DiskFileItemFactory()
         val upload = FileUpload(factory)
         val fileItems: List<FileItem> = upload.parseRequest(this)
