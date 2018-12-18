@@ -1,7 +1,6 @@
 package com.cliff.memeify
 
 import org.apache.commons.fileupload.FileItem
-import org.apache.commons.fileupload.FileItemFactory
 import org.apache.commons.fileupload.FileUpload
 import org.apache.commons.fileupload.UploadContext
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
@@ -28,8 +27,8 @@ class MultipartFormParser(private val boundary: String, private val body: ByteAr
         // parse form parameters from the body
         val factory = DiskFileItemFactory()
         val upload = FileUpload(factory)
-        // Set overall request size constraint
-        upload.sizeMax = System.getenv("MAX_BODY_SIZE_MB").toLong() * 1024
+        // Set overall request size constraint and convert to bytes
+        upload.sizeMax = System.getenv("MAX_BODY_SIZE_MB").toLong() * 1024 * 1024
         val fileItems: List<FileItem> = upload.parseRequest(this)
         fileItems.forEach { fi ->
             // is the FileItem a simple form field?

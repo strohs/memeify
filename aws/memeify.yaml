@@ -11,10 +11,38 @@ Parameters:
     Type: String
     Default: "memeify-lambdas-0.1.jar"
 
+Globals:
+  Api:
+    # API Gateway regional endpoints
+    EndpointConfiguration: REGIONAL
+
+    # needed so that multipart/form-data will be base64 encoded by API Gateway
+    BinaryMediaTypes:
+      - multipart~1form-data
+
 Resources:
-  # this is the bucket that stores memeified images
+  # create a bucket, with public read access, that stores memeified images
   ImageOutputBucket:
     Type: AWS::S3::Bucket
+
+  # allows public get object permissions on the ImageOutputBucket
+  PublicGetObjectPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ImageOutputBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:aws:s3:::"
+                  - Ref: ImageOutputBucket
+                  - "/*"
+            Principal: "*"
 
   MemeifyLambda:
     Type: AWS::Serverless::Function
@@ -29,7 +57,7 @@ Resources:
       Policies:
         # Give this lambda write access to cloudwatch logs
         - AWSLambdaBasicExecutionRole
-        # Gives CRUD permissions to objects in the S3 Bucket
+        # Gives the lambda CRUD permissions to objects in the S3 Bucket
         - S3CrudPolicy:
             BucketName: !Ref ImageOutputBucket
       Environment:
