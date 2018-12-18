@@ -35,7 +35,7 @@ Resources:
       Environment:
         Variables:
           OUTPUT_BUCKET_NAME: !Ref ImageOutputBucket
-          MAX_IMAGE_SIZE_MB: 5
+          MAX_BODY_SIZE_MB: 10
       # the events that trigger this lambda function, this function will be triggered by a POST request to API Gateway
       Events:
         MemeifyApiPost:

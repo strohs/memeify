@@ -17,7 +17,10 @@ class S3Utils(val s3Client: S3Client) {
      * put an object into the specified S3 bucket
      */
     fun putObject(bucket: String, key: String, data: ByteArray): PutObjectResponse {
-        val putReq = PutObjectRequest.builder().bucket(bucket).key(key).build()
+        val putReq = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build()
         return s3Client.putObject(putReq, RequestBody.fromBytes(data))
     }
 

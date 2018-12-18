@@ -8,29 +8,31 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory
 import java.io.InputStream
 
 /**
- * Uses Apache commons file to parse the BODY portion of a multipart/form-data
- *
- * The simple form fields will be in the paramsMap property, with the form field name as the key, and the value of
- * that form field as the value
- *
- * The file will be in the fileMap, with the filename as the key, and the value will contain a ByteArray of the file
+ * Uses Apache commons fileupload to parse the BODY portion of a multipart/form-data into two separate maps
  *
  * @author Cliff
  */
-class MultipartFormParser(val boundary: String, val body: ByteArray): UploadContext {
+class MultipartFormParser(private val boundary: String, private val body: ByteArray): UploadContext {
 
-    // holds the simple form fields
-    val paramsMap = mutableMapOf<String,String>()
-    // holds the filename as a Key and an input stream to the file as a value
-    val filesMap = mutableMapOf<String, ByteArray>()
 
-    init {
+    /**
+     * parse the submitted form fields into a Pair of Maps, the first map of the pair contains the "simple" form fields
+     * and the second contains the "file" data
+     */
+    fun parse(): Pair<Map<String,String>, Map<String,ByteArray>> {
+        // map of form field name to form field value
+        val paramsMap = mutableMapOf<String,String>()
+        // map of image filename to ByteArray of the image
+        val filesMap = mutableMapOf<String, ByteArray>()
+
         // parse form parameters from the body
-        val factory: FileItemFactory = DiskFileItemFactory()
+        val factory = DiskFileItemFactory()
         val upload = FileUpload(factory)
+        // Set overall request size constraint
+        upload.sizeMax = System.getenv("MAX_BODY_SIZE_MB").toLong() * 1024
         val fileItems: List<FileItem> = upload.parseRequest(this)
         fileItems.forEach { fi ->
-            // is the item a simple form field?
+            // is the FileItem a simple form field?
             if ( fi.isFormField ) {
                 paramsMap.put( fi.fieldName, fi.string )
             } else {
@@ -41,6 +43,7 @@ class MultipartFormParser(val boundary: String, val body: ByteArray): UploadCont
                 println("---> mem?:${fi.isInMemory}")
             }
         }
+        return Pair (paramsMap, filesMap)
     }
 
     override fun getCharacterEncoding(): String {

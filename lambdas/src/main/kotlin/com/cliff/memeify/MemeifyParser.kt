@@ -31,7 +31,7 @@ object MemeifyParser {
      *
      * @throws IllegalArgumentException if a required field is missing
      */
-    fun parseMultipartFormBody(input: APIGatewayProxyRequestEvent): MultipartFormParser {
+    fun parse (input: APIGatewayProxyRequestEvent): FormData {
         // parse the content type and boundary information from the header
         val contentTypeHeader: String? = input.headers.get("content-type") ?: input.headers.get("Content-Type")
         val boundary = contentTypeHeader?.let { MultipartFormParser.parseBoundaryFromHeader(it) }
@@ -41,18 +41,31 @@ object MemeifyParser {
         val bodyBytes = Base64.getDecoder().decode(input.body)
         //println("decoded request:${bodyBytes.toString(Charsets.ISO_8859_1)}")
 
-        // use our customized apache commons file upload to parse the fields from the body
-        val mfp = MultipartFormParser(boundary, bodyBytes)
+        // use our customized apache commons file upload to parse the fields from the body into Maps
+        val formMaps = MultipartFormParser(boundary, bodyBytes).parse()
 
         // verify required fields are present
-        if (!mfp.paramsMap.containsKey(Handler.TOP_TEXT_KEY)) throw IllegalArgumentException("topText field was not sent as part of the request")
-        if (!mfp.paramsMap.containsKey(Handler.BOT_TEXT_KEY)) throw IllegalArgumentException("botText field was not sent as part of the request")
-        val imageSet = mfp.filesMap.keys
-        if (imageSet.size != 1) throw IllegalArgumentException("exactly one image should be sent in the request, ${imageSet.size} image(s) were found")
-        // make sure a valid file type was sent
-        val fileExt = File(mfp.filesMap.keys.first()).extension
-        if (!validFileTypes.contains(fileExt)) throw IllegalArgumentException("only .jpg and .png image are supported, posted image type was $fileExt")
+        validFormParameters( formMaps.first, formMaps.second)
 
-        return mfp
+        return FormData( formMaps.first, formMaps.second)
+    }
+
+
+
+    /**
+     *
+     * validates that required form fields were sent in the request
+     * @returns true if submitted form fields are valid, else throws an IllegalArgumentException
+     */
+    fun validFormParameters (paramsMap: Map<String,String>, filesMap: Map<String,ByteArray>): Boolean {
+        // verify required fields are present
+        if (!paramsMap.containsKey(Handler.TOP_TEXT_KEY)) throw IllegalArgumentException("topText field was not sent as part of the request")
+        if (!paramsMap.containsKey(Handler.BOT_TEXT_KEY)) throw IllegalArgumentException("botText field was not sent as part of the request")
+        if (filesMap.keys.size != 1) throw IllegalArgumentException("exactly one image should be sent in the request, ${filesMap.keys.size} image(s) were found")
+
+        // make sure a valid file type was sent
+        val fileExt = File(filesMap.keys.first()).extension
+        if (!validFileTypes.contains(fileExt)) throw IllegalArgumentException("only .jpg and .png image are supported, posted image type was $fileExt")
+        return true
     }
 }

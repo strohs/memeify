@@ -14,22 +14,33 @@ import java.util.*
 import kotlin.streams.asSequence
 
 /**
+ * This lambda will add text to an image file and then save it in a S3 Bucket. It uses the standard Java graphics
+ * libraries (Graphics2D, Font, BufferedImage) to do the "memeifying". To keep things simple, all image processing
+ * is done IN MEMORY, so the size of the image you can process will vary with the size of memory allocated to this
+ * lambda. Using a 256MB lambda, I've tested with images <= 5MB in size.
  *
+ * The image file and associated text is POSTed to API Gateway and then sent to this Lambda via LambdaProxyIntegration.
+ * Since ProxyIntegration is used, it is expected that the Request Body will be BASE64 encoded in order to correctly
+ * preserve the image bytes. The use of BASE64 encoding will increase the Body size by about 33%, which can limit the
+ * size of images you send. In addition, API Gateway imposes a 10MB limit on request sizes
+ *
+ * Environment Variables:
+ *  the following two environment variables should be set for this lambda:
+ *    OUTPUT_BUCKET_NAME = name of the S3 bucket where image files will be written
+ *    MAX_BODY_SIZE_MB = max size (in megabytes) allowed for the HTTP request body sent to this lambda
  *
  * NOTES:
- *  POSTed data must be multipart/form-data and contain the following:
- *    ONE image file section, either (jpg or png)
- *    a form field named "topText" containing the text to place on the top of the image
- *    a form field name "botText" containing the text to place on the bottom of the image
+ *  POSTed data content-type must be multipart/form-data and contain the following fields:
+ *    - One image file, must send a filename with either a jpg or png extension
+ *    - a form field named "topText" containing the text to place on the top of the image, <= 75 chars
+ *    - a form field name "botText" containing the text to place on the bottom of the image, <= 75 chars
  *
- * The total size of the HTTP Request, should not exceed 5MB, API Gateway may reject the request with a
- * @author Cliff
  */
 
 
 class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    // bucket were the memeified files will be written
+    // bucket where the memeified files will be written
     val outBucket = System.getenv("OUTPUT_BUCKET_NAME")
 
     // jackson mapper for serializing/deserializing JSON
@@ -47,19 +58,19 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
 
         try {
             // parse and validate the multipart/form-data parameters
-            val mfp = MemeifyParser.parseMultipartFormBody(input)
-            println("paramsMap size:${mfp.paramsMap.size}")
-            println("filesMap size:${mfp.filesMap.size}")
+            val formData = MemeifyParser.parse(input)
+            println("paramsMap size:${formData.paramsMap.size}")
+            println("filesMap size:${formData.filesMap.size}")
 
             // get the filename of the image
-            val filename = mfp.filesMap.keys.first()
+            val filename = formData.filesMap.keys.first()
             println("filename=$filename")
 
             // memeify the image
-            val memeifiedBytes = Memeify.memeify(mfp.filesMap[filename]!!,
+            val memeifiedBytes = Memeify.memeify(formData.filesMap[filename]!!,
                     File(filename).extension,
-                    mfp.paramsMap[TOP_TEXT_KEY]!!,
-                    mfp.paramsMap[BOT_TEXT_KEY]!!)
+                    formData.paramsMap[TOP_TEXT_KEY]!!,
+                    formData.paramsMap[BOT_TEXT_KEY]!!)
             println("memeified bytes ${memeifiedBytes.size}")
 
             // save memeified file, with a random filename prefix, to S3
@@ -101,8 +112,8 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
 
 
     companion object {
-        const val TOP_TEXT_KEY = "topText"  // name of the form field containing the text to place on top of the image
-        const val BOT_TEXT_KEY = "botText"  // name of the form field containing the text to place on the bottom of the image
+        const val TOP_TEXT_KEY = "topText"  // name of the form field containing text to place on top of the image
+        const val BOT_TEXT_KEY = "botText"  // name of the form field containing text to place on the bottom of the image
 
         // generate a random string of length characters
         fun randomString(length: Int): String {
