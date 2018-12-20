@@ -46,7 +46,7 @@ class MultipartFormParser(private val boundary: String, private val body: ByteAr
     }
 
     override fun getCharacterEncoding(): String {
-        // ISO-8859-1 is the default encoding used by multipart/form-upload
+        // ISO-8859-1 is used by multipart/form-upload
         return "ISO-8859-1"
     }
 

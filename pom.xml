@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <name>memeify</name>
-    <description>an example website that adds text to images, powered by AWS, vue.js and vuetify</description>
+    <description>an single page website that adds text to images, powered by AWS, vue.js and vuetify</description>
 
     <properties>
         <main.basedir>${project.basedir}</main.basedir>
@@ -19,6 +19,7 @@
 
     <modules>
         <module>lambdas</module>
+        <module>frontend</module>
     </modules>
 
 </project>

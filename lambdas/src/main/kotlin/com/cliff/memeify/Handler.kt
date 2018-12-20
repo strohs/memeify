@@ -14,23 +14,23 @@ import java.util.*
 import kotlin.streams.asSequence
 
 /**
- * This lambda will add text to an image file and then save it in a S3 Bucket. It uses the standard Java graphics
+ * Memeify lambda will add text to an image file and then save it in a S3 Bucket. It uses the standard Java graphics
  * libraries (Graphics2D, Font, BufferedImage) to do the "memeifying". To keep things simple, all image processing
  * is done IN MEMORY, so the size of the image you can process will vary with the size of memory allocated to this
- * lambda. Using a 256MB lambda, I've tested with images <= 5MB in size.
+ * lambda. Using a 256MB lambda, I've tested with images <= 1MB in size.
  *
- * The image file and associated text is POSTed to API Gateway and then sent to this Lambda via LambdaProxyIntegration.
- * Since ProxyIntegration is used, it is expected that the Request Body will be BASE64 encoded in order to correctly
- * preserve the image bytes. The use of BASE64 encoding will increase the Body size by about 33%, which can limit the
+ * The image file and associated text is POSTed to API Gateway and then sent to this Lambda via Lambda Proxy Integration.
+ * Since the request will contain binary data (an image), it is expected that the Request Body will be BASE64
+ * encoded. The use of BASE64 encoding will increase the Body size by about 33%, which can limit the
  * size of images you send. In addition, API Gateway imposes a 10MB limit on request sizes
  *
  * @returns an APIGatewayResponseEvent with the "body" field containing the following JSON string:
- *   { "imageUrl" : "https://s3-REGION-BUCKET-KEY-WILL-BE-HERE" }
+ *   { "imageUrl" : "https://s3-URL-TO-IMAGE-WILL-BE-HERE" }
  *
  * Environment Variables:
  *  the following two environment variables should be set for this lambda:
  *    OUTPUT_BUCKET_NAME = name of the S3 bucket where image files will be written
- *    MAX_BODY_SIZE_MB = max size (in megabytes) allowed for the HTTP request body sent to this lambda
+ *    MAX_BODY_SIZE_MB = max size (in megabytes) allowed for the HTTP request body sent to this lambda.
  *
  * NOTES:
  *  POSTed data content-type must be multipart/form-data and contain the following fields:
@@ -83,15 +83,17 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
             // build a 200 response containing location of memeified image in S3
             response = buildResponse(
                     200,
-                    null,
+                    mutableMapOf(),
                     mapper.writeValueAsString( MemeifyResponse( s3Utils.buildS3PathUrl(outBucket,savedFilename), null)))
 
         } catch (ex: IllegalArgumentException) {
+            println(ex)
             response = buildResponse(
                     400,
                     mutableMapOf("X-Amzn-ErrorType" to "IllegalArgumentException"),
                     mapper.writeValueAsString(MemeifyResponse(null, ex.message)))
         } catch (ex: Exception) {
+            println(ex)
             response = buildResponse(
                     400,
                     mutableMapOf("X-Amzn-ErrorType" to "Exception"),
@@ -105,7 +107,9 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
     /**
      * build an APIGatewayProxyResponse object with (optional) headers
      */
-    fun buildResponse(code: Int, headers: MutableMap<String, String>?, body: String): APIGatewayProxyResponseEvent {
+    fun buildResponse(code: Int, headers: MutableMap<String, String>, body: String): APIGatewayProxyResponseEvent {
+        // required for axios to accept responses from API Gateway
+        headers["Access-Control-Allow-Origin"] = "*"
         return APIGatewayProxyResponseEvent()
                 .withStatusCode(code)
                 .withHeaders(headers)

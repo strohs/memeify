@@ -16,6 +16,10 @@ Globals:
     # API Gateway regional endpoints
     EndpointConfiguration: REGIONAL
 
+    # tells the browser to allow code from any origin to access a resource
+    Cors:
+      AllowOrigin: "'*'"
+
     # needed so that multipart/form-data will be base64 encoded by API Gateway
     BinaryMediaTypes:
       - multipart~1form-data
