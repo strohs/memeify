@@ -12,9 +12,9 @@ import javax.imageio.ImageIO
 
 
 /**
- * Adds text to the top and bottom of a image. Uses Java's BufferedImage, Font and Graphics2d classes in the
- * java.awt package for all image manipulation. Image should be at least 400 x 300 otherwise the generated Fonts
- * can get too small.
+ * Adds text to the top and bottom of a image. Uses Java's BufferedImage, Font and Graphics2d classes from the
+ * java.awt package for all image manipulation. Image should be at least 400 x 300 otherwise the generated text
+ * will be too small to read.
  *
  * @author Cliff
  */
