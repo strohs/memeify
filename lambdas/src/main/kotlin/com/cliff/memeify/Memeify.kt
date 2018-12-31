@@ -12,9 +12,9 @@ import javax.imageio.ImageIO
 
 
 /**
- * Adds text to the top and bottom of a image. Uses Java's BufferedImage, Font and Graphics2d classes from the
- * java.awt package for all image manipulation. Image should be at least 400 x 300 otherwise the generated text
- * will be too small to read.
+ * image processing class that adds text (as Strings) to the top and bottom of a image. Uses Java's BufferedImage, Font and
+ * Graphics2d classes from the java.awt package for all image manipulation. Image should be at least 400 x 300
+ * otherwise the generated text will be too small to read.
  *
  * @author Cliff
  */
@@ -24,6 +24,12 @@ class Memeify {
         // font size should 5% of image height
         val FONT_SIZE_PERCENTAGE = 0.05
 
+        /**
+         * adds text to the image. topText is added to the top of the image and botText is added to the bottom of
+         * the image
+         * @returns
+         *  a ByteArray containing the "memeified" image
+         */
         fun memeify(image:ByteArray, imageFormat: String, topText:String, botText: String): ByteArray {
             val img = loadImage(image)
             val width = img.width
@@ -35,18 +41,18 @@ class Memeify {
 
             // compute font size relative to image dimensions
             val fontSize = computeFontSize(width, height)
-            println("fontSize=$fontSize")
+            //println("fontSize=$fontSize")
             g2d.font = Font(Font.SANS_SERIF, Font.BOLD, fontSize)
 
-            // draw graphics
+            // draw 2d graphics
             g2d.drawImage(img, 0, 0, null)
 
-            // determine if top line needs to be split, then draw the top text lines
-            println("top text width: ${g2d.fontMetrics.stringWidth(topText)}")
+            // determine if top line of text needs to be split, then draw the top text lines
+            //println("top text width: ${g2d.fontMetrics.stringWidth(topText)}")
             val topLines = fitLineToWidth(topText, g2d.fontMetrics.stringWidth(topText), width)
             drawTopText(g2d, topLines, width, height)
             // draw bottom lines
-            println("bottom text width: ${g2d.fontMetrics.stringWidth(botText)}")
+            //println("bottom text width: ${g2d.fontMetrics.stringWidth(botText)}")
             val botLines = fitLineToWidth(botText, g2d.fontMetrics.stringWidth(botText), width)
             drawBottomText(g2d, botLines, width, height)
 
@@ -78,6 +84,7 @@ class Memeify {
             return baos.toByteArray()
         }
 
+        // computes the font size as a percentage of the image height
         fun computeFontSize(imageWidth: Int, imageHeight: Int): Int {
             return if (imageWidth > imageHeight) {
                 Math.ceil(imageHeight * FONT_SIZE_PERCENTAGE).toInt()
@@ -87,10 +94,10 @@ class Memeify {
         }
 
         // return the x coordinate start position so that text will be centered within an image
-        fun xStartPos(stringWidth: Int, imageWidth: Int): Int {
-            return Math.abs(imageWidth - stringWidth) / 2
-        }
+        fun xStartPos(stringWidth: Int, imageWidth: Int): Int = Math.abs(imageWidth - stringWidth) / 2
 
+        // fits a line of text to the image width. If a line exceeds the image width then the line is split into a max
+        // of two lines of text
         fun fitLineToWidth(line: String, stringWidth: Int, imageWidth: Int): List<String> {
             val lines = ArrayList<String>()
             lines.add(line)

@@ -7,7 +7,7 @@
     <groupId>com.cliff</groupId>
     <artifactId>memeify</artifactId>
     <version>0.1</version>
-    <!-- pom indicates this project will contain maven submodules -->
+    <!-- pom packaging indicates this project will contain maven submodules -->
     <packaging>pom</packaging>
 
     <name>memeify</name>

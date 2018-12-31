@@ -1,14 +1,15 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Root stack that creates the Memeify S3 output bucket, Memeify Lambda function, and API Gateway POST method
-  that receives uploaded images.
+  uses SAM to create the Memeify S3 output bucket, Memeify Lambda function, and an API Gateway POST method
+  for receiving images
 Parameters:
   LambdaCodeBucket:
     Type: String
-    Description: "name of S3 bucket containing the memeify lambda code (.jar)"
+    Description: "name of S3 bucket containing the memeify lambda code"
   LambdaCodeKey:
     Type: String
+    Description: "name of the memeify lambda .jar"
     Default: "memeify-lambdas-0.1.jar"
 
 Globals:
@@ -20,7 +21,7 @@ Globals:
     Cors:
       AllowOrigin: "'*'"
 
-    # needed so that multipart/form-data will be base64 encoded by API Gateway
+    # needed so that multipart/form-data will be base64 encoded by API Gateway, (the ~1 is converted to a slash)
     BinaryMediaTypes:
       - multipart~1form-data
 
@@ -68,9 +69,9 @@ Resources:
         Variables:
           OUTPUT_BUCKET_NAME: !Ref ImageOutputBucket
           MAX_BODY_SIZE_MB: 10
-      # the events that trigger this lambda function, this function will be triggered by a POST request to API Gateway
+      # configure the lambda to be triggered by a POST request to API Gateway
       Events:
-        MemeifyApiPost:
+        MemeifyApiPostEvent:
           Type: Api
           Properties:
             Path: /memeify
@@ -81,4 +82,6 @@ Outputs:
     Value: !GetAtt MemeifyLambda.Arn
   OutputBucketName:
     Value: !Ref ImageOutputBucket
+  ApiUrl:
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/memeify"
 

@@ -14,7 +14,7 @@ import java.util.*
 import kotlin.streams.asSequence
 
 /**
- * Memeify lambda will add text to an image file and then save it in a S3 Bucket. It uses the standard Java graphics
+ * This lambda will add text to an image file and then save it in a S3 Bucket. It uses the standard Java graphics
  * libraries (Graphics2D, Font, BufferedImage) to do the "memeifying". To keep things simple, all image processing
  * is done IN MEMORY, so the size of the image you can process will vary with the size of memory allocated to this
  * lambda. Using a 256MB lambda, I've tested with images <= 1MB in size.
@@ -24,19 +24,22 @@ import kotlin.streams.asSequence
  * encoded. The use of BASE64 encoding will increase the Body size by about 33%, which can limit the
  * size of images you send. In addition, API Gateway imposes a 10MB limit on request sizes
  *
+ * @params
+ *  An ApiGatewayProxyEvent is expected as input and its "body" field must contain multipart/form-data (BASE64 encoded)
+ *  containing the following fields:
+ *    - One image file named "image", in addition, the filename must also be sent with either a jpg or png extension
+ *    - a form field named "topText" containing the text to place on the top of the image, <= 75 chars
+ *    - a form field name "botText" containing the text to place on the bottom of the image, <= 75 chars
+ *
  * @returns an APIGatewayResponseEvent with the "body" field containing the following JSON string:
  *   { "imageUrl" : "https://s3-URL-TO-IMAGE-WILL-BE-HERE" }
+ * OR should an error occur, a 400 status code will be returned along with a JSON object in the following format:
+ *   { "errMsg" : "human readable error message" }
  *
  * Environment Variables:
  *  the following two environment variables should be set for this lambda:
  *    OUTPUT_BUCKET_NAME = name of the S3 bucket where image files will be written
  *    MAX_BODY_SIZE_MB = max size (in megabytes) allowed for the HTTP request body sent to this lambda.
- *
- * NOTES:
- *  POSTed data content-type must be multipart/form-data and contain the following fields:
- *    - One image file, must send a filename with either a jpg or png extension
- *    - a form field named "topText" containing the text to place on the top of the image, <= 75 chars
- *    - a form field name "botText" containing the text to place on the bottom of the image, <= 75 chars
  *
  */
 

@@ -1,7 +1,7 @@
 package com.cliff.memeify
 
 /**
- * holds the form fields submitted to Memeify
+ * holds the submitted form fields submitted to Memeify as a pair of maps
  *
  * @author Cliff
  */
