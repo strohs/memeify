@@ -1,8 +1,8 @@
 Memeify
 ================================================================================================================
-Memeify is a AWS lambda function (written in Kotlin) that allows you to create memes by adding text to an 
-image (jpeg or png).  It is powered by a completely serverless backend and uses API gateway to proxy incoming requests 
-to the lambda and S3 to store the final "memeified" images.
+Memeify is a AWS lambda function (written in Kotlin) that allows you to create simple memes by adding text to an 
+image (jpeg or png). It is powered by a serverless backend that uses API gateway to proxy incoming requests 
+to the lambda, and S3 to store the final "memeified" images.
 
 
 ![grumpy-cat](https://github.com/strohs/memeify/blob/master/memeified-grumpy-cat.jpg)
@@ -11,16 +11,16 @@ to the lambda and S3 to store the final "memeified" images.
 
 ## Building
 This is a multi-module maven project consisting of two modules: `lambdas` and `frontend`. `Lambdas` contains the 
-lambda code and `frontend` contains an OPTIONAL sample web page I used for playing around with vue.js and AWS 
+lambda code and `frontend` contains an OPTIONAL sample web page I used for playing around with vue.js and AWS integration
 (more info on this in the frontend section below)
 
 * to build the memeify lambda jar file, cd into the project root directory and run
     * `mvn clean package -pl lambdas`
-        * the jar artifact should then be built in `lambdas/target/memeify-lambdas-0.1.jar`
+        * the jar artifact will be built in `lambdas/target/memeify-lambdas-0.1.jar`
 * OPTIONAL - to build everything including the frontend resources
     * from the project root directory run `mvn clean package`
 
-### Deploying to AWS
+#### Deploying to AWS
 A cloudformation [template](aws/memeify.yaml) has been provided for creating the Memeify stack. It will create the
 following resources:
     * the memeify lambda function, 
@@ -42,7 +42,7 @@ If successful, memeify will return a json response containing a link to the imag
 
 
 ## Memeify Architecture Flow
-At a high level, this is a very basic serverless architecture. The image file to "memeify", plus the two text strings 
+Nothing fancy here, this is a very basic serverless architecture. The image file to "memeify", plus the two text strings 
 to add to the top and bottom of the image are POSTed as multipart/form-data to API Gateway.  API Gateway uses Lambda
 Proxy Integration to pass the request body to the lambda as an `ApiGatewayProxyRequestEvent`. The lambda code will
 parse the form-data from the event body, add the text to the image, and write the memeified image to an S3 bucket.
@@ -69,12 +69,34 @@ field names and types:
 
 ## Notes and Observations
 The lambda code is written in Kotlin, and uses Java's *BufferedImage*, *Font* and *Graphics2d* classes for all 
-image manipulation. A cloudformation [template](aws/memeify.yaml) has been provided for creating the Memeify stack, 
-as well as a sample [curl script](aws/post-image.sh) that will perform the multipart/form-data posting of the image. 
+image manipulation. This was relatively easy to do, as these libraries have been around for years and there are 
+plenty of examples on how to add text to an image. 
 
 
+Getting image data from API Gateway into lambda, without API Gateway munging the image data was a little more of 
+an adventure. There are few examples of how to do this on the internet (or maybe I was googling the wrong 
+keywords) and support for multipart/form-data was added to API-Gateway late in 2017.  
 
-## Frontend
+The gist of it ... is this:
+API Gateway must be configured to treat `multipart/form-data` as a *Binary Media Type*. Once configured,
+API-GW will detect multipart/form-data requests, automatically BASE64 encode the entire request body, attach
+ it to the "body" field of the `ApiGatewayProxyEvent`, and then send the proxy event to your lambda. 
+ This process keeps the image data from being munged, but increases the request size by about 33% (thanks base64 encoding).
+ You should also be aware that API Gateway limits incoming request sizes to a max of 10MB, so trying to POST large 
+ images would be impossible with current size limitations. An alternate approach, and one that avoids using API
+ Gateway, would be to post new images directly into a S3 bucket and have your lambda trigger off of bucket PUT events.
+ I did not take this approach because I wanted to explore using API Gateway with Lambda proxy integration.  
+
+Another point to note is that the current code is a memory hog, as all processing is done in memory. For example:
+ the incoming JSON event data is de-serialized in memory, then the request body is extracted from the JSON event 
+ and BASE64 decoded into a ByteArray. That ByteArray contains the multipart/form-data which is also parsed in memory, 
+ and then the actual image data is extracted into another ByteArray and manipulated in memory. 
+ As you can see memory usage adds up pretty quickly.  If this gets to be a concern, one option would 
+ be to start writing data to the lambdas `/tmp` storage (max size of 512MB) and then work with data from disk, 
+ possibly trading processing speed for reduced memory usage. 
+
+
+## Frontend Notes
 The frontend module contains a vue.js application used for submitting images to memeify. It's not used by the lambda
 code and is simply for testing purposes between a web front-end and AWS.  I may eventually use it as a starting point 
 for a fictitious web-site that creates memes.
