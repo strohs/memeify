@@ -1,8 +1,8 @@
 Memeify
 ================================================================================================================
-Memeify is a AWS lambda function (written in Kotlin) that allows you to create simple memes by adding text to an 
-image (jpeg or png). It is powered by a serverless backend that uses API gateway to proxy incoming requests 
-to the lambda, and S3 to store the final "memeified" images.
+Memeify is a AWS lambda function (written in Kotlin) that allows you to create memes by adding text to an 
+image (jpeg or png). It is powered by a serverless backend that uses API gateway to proxy incoming requests (to the
+lambda) and S3 to store the final "memeified" images.
 
 
 ![grumpy-cat](https://github.com/strohs/memeify/blob/master/memeified-grumpy-cat.jpg)
@@ -10,8 +10,8 @@ to the lambda, and S3 to store the final "memeified" images.
     
 
 ## Building
-This is a multi-module maven project consisting of two modules: `lambdas` and `frontend`. `Lambdas` contains the 
-lambda code and `frontend` contains an OPTIONAL sample web page I used for playing around with vue.js and AWS integration
+This is a maven project consisting of two modules: `lambdas` and `frontend`. `Lambdas` contains the 
+lambda code while `frontend` contains an OPTIONAL sample web page I used for playing around with vue.js and AWS
 (more info on this in the frontend section below)
 
 * to build the memeify lambda jar file, cd into the project root directory and run
@@ -42,10 +42,10 @@ If successful, memeify will return a json response containing a link to the imag
 
 
 ## Memeify Architecture Flow
-Nothing fancy here, this is a very basic serverless architecture. The image file to "memeify", plus the two text strings 
-to add to the top and bottom of the image are POSTed as multipart/form-data to API Gateway.  API Gateway uses Lambda
-Proxy Integration to pass the request body to the lambda as an `ApiGatewayProxyRequestEvent`. The lambda code will
-parse the form-data from the event body, add the text to the image, and write the memeified image to an S3 bucket.
+Nothing fancy here, this is a basic serverless architecture. The image file to "memeify", plus the two text strings 
+to add to the top and bottom of the image are POSTed (as multipart/form-data) to API Gateway.  API Gateway uses Lambda
+Proxy Integration to pass the request body to the lambda as an `ApiGatewayProxyRequestEvent`. The lambda code 
+parses the form-data from the event body, add the text to the image, and writes the "memeified" image to an S3 bucket.
 If all goes well, the lambda will return a JSON response containing a URL to the image in
  S3. For example: 
 ```json
