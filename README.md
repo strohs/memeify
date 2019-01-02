@@ -72,12 +72,11 @@ The lambda code is written in Kotlin, and uses Java's *BufferedImage*, *Font* an
 image manipulation. This was relatively easy to do, as these libraries have been around for years and there are 
 plenty of examples on how to add text to an image. 
 
-
-Getting image data from API Gateway into lambda, without API Gateway munging the image data was a little more of 
+Getting image data from API Gateway into lambda, without API Gateway munging the data, was a little more of 
 an adventure. There are few examples of how to do this on the internet (or maybe I was googling the wrong 
-keywords) and support for multipart/form-data was added to API-Gateway late in 2017.  
-
+keywords) and support for multipart/form-data was recently added to API-Gateway in late 2017.  
 The gist of it ... is this:
+
 API Gateway must be configured to treat `multipart/form-data` as a *Binary Media Type*. Once configured,
 API-GW will detect multipart/form-data requests, automatically BASE64 encode the entire request body, attach
  it to the "body" field of the `ApiGatewayProxyEvent`, and then send the proxy event to your lambda. 
@@ -87,20 +86,19 @@ API-GW will detect multipart/form-data requests, automatically BASE64 encode the
  Gateway, would be to post new images directly into a S3 bucket and have your lambda trigger off of bucket PUT events.
  I did not take this approach because I wanted to explore using API Gateway with Lambda proxy integration.  
 
-Another point to note is that the current code is a memory hog, as all processing is done in memory. For example:
+Another point to note is that my current code is a memory hog, as all processing is done in memory. For example:
  the incoming JSON event data is de-serialized in memory, then the request body is extracted from the JSON event 
- and BASE64 decoded into a ByteArray. That ByteArray contains the multipart/form-data which is also parsed in memory, 
+ and BASE64 decoded into a ByteArray. That ByteArray (containing the multipart/form-data) is also parsed in memory, 
  and then the actual image data is extracted into another ByteArray and manipulated in memory. 
  As you can see memory usage adds up pretty quickly.  If this gets to be a concern, one option would 
  be to start writing data to the lambdas `/tmp` storage (max size of 512MB) and then work with data from disk, 
- possibly trading processing speed for reduced memory usage. 
+ trading processing speed for reduced memory usage. 
 
 
 ## Frontend Notes
-The frontend module contains a vue.js application used for submitting images to memeify. It's not used by the lambda
-code and is simply for testing purposes between a web front-end and AWS.  I may eventually use it as a starting point 
-for a fictitious web-site that creates memes.
-It uses vue.js, vuetify, and npm. If you have experience with these tools then you can start the front-end
+The frontend module contains a vue.js/npm application for submitting images to memeify. It essentially just an HTML form
+ that submits data to API Gateway. I may eventually use it as a starting point for a fictitious web-site that 
+ creates memes. If you have experience with these node/npm then you can start the front-end
 in development mode using the following steps:
     * deploy the memeify lambda onto AWS
     * configure the API gateway URL of the memeify endpoint into the [.env file](frontend/.env)
