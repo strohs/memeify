@@ -34,7 +34,7 @@ import kotlin.streams.asSequence
  * @returns an APIGatewayResponseEvent with the "body" field containing the following JSON string:
  *   { "imageUrl" : "https://s3-URL-TO-IMAGE-WILL-BE-HERE" }
  * OR should an error occur, a 400 status code will be returned along with a JSON object in the following format:
- *   { "errMsg" : "human readable error message" }
+ *   { "errorMsg" : "human readable error message" }
  *
  * Environment Variables:
  *  the following two environment variables should be set for this lambda:

@@ -7,34 +7,18 @@ lambda) and S3 to store the final *"memeified"* images.
 
 ![grumpy-cat](https://github.com/strohs/memeify/blob/master/memeified-grumpy-cat.jpg)
 
-## Overview
-Memeify expects to receive an image file and two text strings as input, (POSTed as multipart/form-data.)
-The two strings represent the text to place at the top and bottom of the image respectively. 
-API Gateway uses Lambda Proxy Integration to pass the request body to the lambda as an `ApiGatewayProxyRequestEvent`. 
-The lambda code parses the form-data from the event body, adds the text to the image, and writes the "memeified" image 
-to an S3 bucket.
-If all goes well, the lambda will return a JSON response containing a URL to the image in S3. 
-For example:    
-```json
-    { "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}
-```
-
-Or, if an error occurs, JSON containing the error message will be returned:
-```json
-    { "errorMsg" : "image size must be <= 1MB"}
-```
-   
 
 ## Building
 This is a maven project consisting of two modules: `lambdas` and `frontend`. `Lambdas` contains the 
 lambda code while `frontend` contains a sample web page that I used for playing around with vue.js and AWS
-integration (see the frontend section at the end of this readme)
+integration (see the frontend section at the end of this readme for more information)
 
 * to build the memeify lambda jar file, cd into the project root directory and run
     * `mvn clean package -pl lambdas`
         * the jar artifact will be built in `lambdas/target/memeify-lambdas-0.1.jar`
 * OPTIONAL - to build everything including the frontend resources
     * from the project root directory run `mvn clean package`
+
 
 #### Deploying to AWS
 A cloudformation [template](aws/memeify.yaml) has been provided for creating the Memeify stack. It will create the
@@ -51,28 +35,19 @@ following resources:
 ## Running
 Once the stack is up, you can use the [provided curl script](aws/post-image.sh) to send data to memeify. The script
 will send an image file and two text strings to memeify as multipart/form-data. You must configure the script with
-the API Gateway URL to your lambda endpoint. You can find this in the outputs of the memeify stack or in the API
-Gateway console. 
+the API Gateway URL of your memeify endpoint. You can find this in the outputs of the memeify stack or in the API
+Gateway console (look for an API named "memeify). 
 If successful, memeify will return a json response containing a link to the image in s3:
     ```{ "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}``` 
 
 
 ## Memeify Architecture Flow
-Nothing fancy here, this is a basic serverless architecture. The image file to "memeify", plus the two text strings 
-to add to the top and bottom of the image are POSTed (as multipart/form-data) to API Gateway.  API Gateway uses Lambda
-Proxy Integration to pass the request body to the lambda as an `ApiGatewayProxyRequestEvent`. The lambda code 
-parses the form-data from the event body, add the text to the image, and writes the "memeified" image to an S3 bucket.
-If all goes well, the lambda will return a JSON response containing a URL to the image in
- S3. For example: 
-```json
-{ "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}
-```
-Or, if an error occurs, JSON containing the error message will be returned:
-```json
-{ "errorMsg" : "image size must be <= 1MB"}
-```
-    
-### multipart/form-data structure
+Nothing too fancy here. Multipart/form-data is posted to API Gateway, which will BASE64 encode the request body and
+ send it on to the memeify lambda as a `ApiGatewayProxyEvent`.  The memeify lambda will extract and parse the 
+ form-data, add the passed in text to the top and bottom of the image, and then store the modified image to a 
+ S3 bucket.  
+ 
+### input
 The memeify lambda expects to receive three fields POSTed as multipart/form-data. The data must contain the following
 field names and types:
 
@@ -83,9 +58,23 @@ field names and types:
 | botText    | String                  | <= 75 characters |
 
 
+### output
+If all goes well, the lambda will return a JSON response containing a URL to the image in
+ S3. For example: 
+```json
+{ "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}
+```
+Or, if an error occurs, JSON containing the error message will be returned:
+```json
+{ "errorMsg" : "image size must be <= 1MB"}
+```
+
+
 ## Notes and Observations
 This project started as a practice application to help me study for an AWS Developer Certification. The exam
-featured many questions on AWS serverless, and building an actual application was the best way to learn. 
+featured many questions on AWS serverless, and building an actual application was the best way to learn. Specifically,
+I wanted to learn how AWS Proxy Integration worked between API-GW and Lambda (even though the exam does not go into 
+that level of detail).
 
 Kotlin was chosen as the implementation language as I had used it in the past and wanted to come up to speed on 
  how to use it within a Lambda. The Kotlin code uses Java's *BufferedImage*, *Font* and *Graphics2d* classes for all 
