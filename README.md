@@ -39,7 +39,10 @@ will send an image file and two text strings to memeify as multipart/form-data. 
 the API Gateway URL of your memeify endpoint. You can find this in the outputs of the memeify stack or in the API
 Gateway console (look for an API named "memeify). 
 If successful, memeify will return a json response containing a link to the image in s3:
-    ```{ "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}``` 
+
+```json
+{ "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}
+``` 
 
 
 ## Memeify Architecture Flow
