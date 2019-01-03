@@ -105,7 +105,7 @@ The incoming JSON event data is de-serialized in memory, then the entire request
  in memory, and finally the actual image data is extracted into another ByteArray and manipulated in memory. 
  
 In this particular scenario, memory usage was not a concern, but if it is for you, one alternative 
-option would be to use lambdas `/tmp` disk torage (max size of 512MB) 
+option would be to use lambdas `/tmp` disk storage (max size of 512MB) 
 and then work with your data from there, trading processing speed for reduced memory usage. On the flip side, you 
 might want your lambda functions to run as fast as possible, as it may 
 [ultimately be cheaper](https://medium.com/@jconning/aws-lambda-faster-is-cheaper-6bf32f58d741) to raise your lambda's
