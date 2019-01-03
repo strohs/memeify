@@ -1,8 +1,8 @@
 Memeify
 ================================================================================================================
 Memeify is a AWS lambda function (written in Kotlin) that allows you to create memes by adding text to an 
-image (jpeg or png). It is powered by a serverless backend that includes API gateway (to proxy incoming requests to the
-lambda) and S3 to store the final "memeified" images. 
+image (jpeg or png). It's completely serverless and uses API gateway (to proxy incoming requests to the
+lambda) and S3 to store the final *"memeified"* images. 
 
 
 ![grumpy-cat](https://github.com/strohs/memeify/blob/master/memeified-grumpy-cat.jpg)
@@ -14,7 +14,8 @@ API Gateway uses Lambda Proxy Integration to pass the request body to the lambda
 The lambda code parses the form-data from the event body, adds the text to the image, and writes the "memeified" image 
 to an S3 bucket.
 If all goes well, the lambda will return a JSON response containing a URL to the image in S3. 
-    For example: 
+For example: 
+    
     ```json
     { "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}
     ```
