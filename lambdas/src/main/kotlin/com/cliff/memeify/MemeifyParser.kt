@@ -13,6 +13,7 @@ object MemeifyParser {
 
     // currently supporting only jpg and png ....for now
     val validFileTypes = setOf("jpg", "png")
+    val MAX_TEXT_CHARS = 75                    // character limit for top text and bottom text
 
     /**
      * extracts the multipart/form-input from the request body, verifies required fields are present
@@ -58,13 +59,21 @@ object MemeifyParser {
      */
     fun validFormParameters (paramsMap: Map<String,String>, filesMap: Map<String,ByteArray>): Boolean {
         // verify required fields are present
-        if (!paramsMap.containsKey(Handler.TOP_TEXT_KEY)) throw IllegalArgumentException("topText field was not sent as part of the request")
-        if (!paramsMap.containsKey(Handler.BOT_TEXT_KEY)) throw IllegalArgumentException("botText field was not sent as part of the request")
-        if (filesMap.keys.size != 1) throw IllegalArgumentException("exactly one image should be sent in the request, ${filesMap.keys.size} image(s) were found")
+        if (!paramsMap.containsKey(Handler.TOP_TEXT_KEY))
+            throw IllegalArgumentException("topText field was not sent as part of the request")
+        if (!paramsMap.containsKey(Handler.BOT_TEXT_KEY))
+            throw IllegalArgumentException("botText field was not sent as part of the request")
+        if (paramsMap[Handler.TOP_TEXT_KEY]?.length!! > MAX_TEXT_CHARS )
+            throw java.lang.IllegalArgumentException("topText field cannot exceed $MAX_TEXT_CHARS characters")
+        if (paramsMap[Handler.BOT_TEXT_KEY]?.length!! > MAX_TEXT_CHARS )
+            throw java.lang.IllegalArgumentException("botText field cannot exceed $MAX_TEXT_CHARS characters")
+        if (filesMap.keys.size != 1)
+            throw IllegalArgumentException("exactly one image should be sent in the request, ${filesMap.keys.size} image(s) were found")
 
         // make sure a valid file type was sent
         val fileExt = File(filesMap.keys.first()).extension
-        if (!validFileTypes.contains(fileExt)) throw IllegalArgumentException("only .jpg and .png image are supported, posted image type was $fileExt")
+        if (!validFileTypes.contains(fileExt))
+            throw IllegalArgumentException("only .jpg and .png image are supported, posted image type was $fileExt")
         return true
     }
 }

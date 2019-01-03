@@ -98,16 +98,16 @@ This process keeps the image data from being corrupted, but it increases the req
 An alternate approach, and one that avoids using API Gateway, would be to post new images directly into a S3 bucket 
 and have your lambda trigger off of new bucket PUT events.
 
-Another observation is that my current implementation of memeify is a memory hog, as all processing is done in memory.
+Another observation is that my current implementation of memeify is a memory hog, as all parsing and image processing
+is done in memory.
 For example:
 The incoming JSON event data is de-serialized in memory, then the entire request body is extracted from the JSON event 
  and BASE64 decoded into a ByteArray. That ByteArray (containing the actual multipart/form-data) is then also parsed 
  in memory, and finally the actual image data is extracted into another ByteArray and manipulated in memory. 
  
-In this particular scenario, memory usage was not a concern, but if it is for you, one alternative 
-option would be to use lambdas `/tmp` disk storage (max size of 512MB) 
-and then work with your data from there, trading processing speed for reduced memory usage. On the flip side, you 
-might want your lambda functions to run as fast as possible, as it may 
+If memory usage is a concern for you, one alternative option would be to use lambdas `/tmp` disk storage 
+(max size of 512MB) and manipulate your data from disk, trading processing speed for reduced memory usage. 
+On the flip side, you might want your lambda functions to run as fast as possible, as it may 
 [ultimately be cheaper](https://medium.com/@jconning/aws-lambda-faster-is-cheaper-6bf32f58d741) to raise your lambda's
  memory limit in order to run faster.
 
