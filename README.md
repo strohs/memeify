@@ -57,7 +57,7 @@ field names and types:
 
 | field name |           type          |    constraints   |
 |:----------:|:-----------------------:|:----------------:|
-| image      | image/jpeg OR image/png | image size <= 2 MB (but this will depend on your lambda memory configuration |
+| image      | image/jpeg OR image/png | image size <= 2 MB (image size limit depends on your lambda memory size |
 | topText    | String                  | <= 75 characters |
 | botText    | String                  | <= 75 characters |
 
@@ -88,16 +88,15 @@ Kotlin was chosen as the implementation language as I had used it in the past an
 
 Getting image data from API Gateway into lambda, without API Gateway munging the data, was a little more of 
 an adventure. After reading dozens of forum posts, my understanding is that API-Gateway did not support 
-multipart/form-data until late 2017. Before that time, you could not POST form data to API-GW and I am not
+multipart/form-data until late 2017. Before that time, you could not POST multipart/form-data to API-GW and I am not
 sure how developers worked around this (if it all).  Fortunately, support for multipart/form-data was added in late 
 2017 but you have to manually configure support for it within API Gateway 
 [settings](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings.html). Basically,
 you tell API Gateway to treat multipart/form-data as binary data and it will automatically BASE64 encode the entire
 multipart/form-data body. This body is then attached to the `ApiGatewayProxyEvent` and sent to your lambda function. 
-This process keeps any binary image data from being corrupted, but it increases the request size by about 33%. 
+This process keeps the image data from being corrupted, but it increases the request size by about 33%. 
 An alternate approach, and one that avoids using API Gateway, would be to post new images directly into a S3 bucket 
-and have your lambda trigger off of new bucket PUT events. I did not take this approach because I wanted to explore 
-using API Gateway with Lambda proxy integration.  
+and have your lambda trigger off of new bucket PUT events.
 
 Another observation is that my current implementation of memeify is a memory hog, as all processing is done in memory.
 For example:
@@ -105,9 +104,9 @@ The incoming JSON event data is de-serialized in memory, then the entire request
  and BASE64 decoded into a ByteArray. That ByteArray (containing the actual multipart/form-data) is then also parsed 
  in memory, and finally the actual image data is extracted into another ByteArray and manipulated in memory. 
  
-In this particular application, memory usage was not a major concern, but if it is for you, one alternative 
-option would be to start writing data to the lambdas `/tmp` storage (max size of 512MB) 
-and then work with your data from there, trading some processing speed for reduced memory usage. On the flip side, you 
+In this particular scenario, memory usage was not a concern, but if it is for you, one alternative 
+option would be to use lambdas `/tmp` disk torage (max size of 512MB) 
+and then work with your data from there, trading processing speed for reduced memory usage. On the flip side, you 
 might want your lambda functions to run as fast as possible, as it may 
 [ultimately be cheaper](https://medium.com/@jconning/aws-lambda-faster-is-cheaper-6bf32f58d741) to raise your lambda's
  memory limit in order to run faster.
