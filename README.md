@@ -23,11 +23,12 @@ integration (see the frontend section at the end of this readme for more informa
 #### Deploying to AWS
 A cloudformation [template](aws/memeify.yaml) has been provided for creating the Memeify stack. It will create the
 following resources:
-    * the memeify lambda function, 
-    * an API Gateway POST method
-    * a S3 bucket for storing the memeified images
-        * Note that **this S3 bucket will have public read access**
+* the memeify lambda function, 
+* an API Gateway POST method
+* a S3 bucket for storing the memeified images
+    * Note that **this S3 bucket will have public read access**
 
+Deploy Steps:
 1. build the lambda .jar file (as described above)
 2. copy the lambda code to an S3 bucket
 3. run the template in cloudformation and point it to the S3 bucket containing the lambda code
