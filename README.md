@@ -57,7 +57,7 @@ field names and types:
 
 | field name |           type          |    constraints   |
 |:----------:|:-----------------------:|:----------------:|
-| image      | image/jpeg OR image/png | image size <= 1 MB |
+| image      | image/jpeg OR image/png | image size <= 2 MB (but this will depend on your lambda memory configuration |
 | topText    | String                  | <= 75 characters |
 | botText    | String                  | <= 75 characters |
 
