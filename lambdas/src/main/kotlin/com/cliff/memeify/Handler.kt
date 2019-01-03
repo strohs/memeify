@@ -108,7 +108,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
 
 
     /**
-     * build an APIGatewayProxyResponse object with (optional) headers
+     * build an APIGatewayProxyResponse object
      */
     fun buildResponse(code: Int, headers: MutableMap<String, String>, body: String): APIGatewayProxyResponseEvent {
         // required for axios to accept responses from API Gateway
