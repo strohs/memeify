@@ -14,15 +14,15 @@ API Gateway uses Lambda Proxy Integration to pass the request body to the lambda
 The lambda code parses the form-data from the event body, adds the text to the image, and writes the "memeified" image 
 to an S3 bucket.
 If all goes well, the lambda will return a JSON response containing a URL to the image in S3. 
-For example: 
-    
-    ```json
+For example:    
+```json
     { "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}
-    ```
-    Or, if an error occurs, JSON containing the error message will be returned:
-    ```json
+```
+
+Or, if an error occurs, JSON containing the error message will be returned:
+```json
     { "errorMsg" : "image size must be <= 1MB"}
-    ```
+```
    
 
 ## Building
