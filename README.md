@@ -80,32 +80,31 @@ featured many questions on AWS serverless, and building an actual application wa
 I wanted to learn how AWS Proxy Integration worked between API-GW and Lambda (even though the exam does not go into 
 that level of detail).
 
-Kotlin was chosen as the implementation language as I had used it in the past and wanted to come up to speed on 
+Kotlin was chosen as the implementation language as I had used it in the past and wanted to explore 
  how to use it within a Lambda. The Kotlin code uses Java's *BufferedImage*, *Font* and *Graphics2d* classes for all 
  image manipulation. This was relatively easy to do, as these libraries have been around for years and there are 
- plenty of examples on image manipulation on the internet. Overall, Kotlin was a joy to work with, the Java integration was 
- flawless, and I hope to work with it again.
+ plenty of examples on image manipulation on the internet. Overall, Kotlin was a joy to work with and the Java 
+ integration was flawless. I hope to work with it again.
 
-Getting image data from API Gateway into lambda, without API Gateway munging the data, was a little more of 
-an adventure. After reading dozens of forum posts, my understanding is that API-Gateway did not support 
-multipart/form-data until late 2017. Before that time, you could not POST multipart/form-data to API-GW and I am not
-sure how developers worked around this (if it all).  Fortunately, support for multipart/form-data was added in late 
-2017 but you have to manually configure support for it within API Gateway 
+The first hurdle of this project was getting image data from API Gateway into lambda, without API Gateway munging 
+the data.  After reading dozens of forum posts, I came to understand that API-Gateway did not support 
+multipart/form-data until late 2017. Before that time, you couldn't POST multipart/form-data to API-GW. I am not
+sure how developers worked around this (if it all).  Fortunately, support for multipart/form-data was eventually added
+ but you have to manually configure support for it within API Gateway 
 [settings](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings.html). Basically,
 you tell API Gateway to treat multipart/form-data as binary data and it will automatically BASE64 encode the entire
-multipart/form-data body. This body is then attached to the `ApiGatewayProxyEvent` and sent to your lambda function. 
+multipart/form-data body. The body is then attached to the `ApiGatewayProxyEvent` and sent to your lambda function. 
 This process keeps the image data from being corrupted, but it increases the request size by about 33%. 
-An alternate approach, and one that avoids using API Gateway, would be to post new images directly into a S3 bucket 
-and have your lambda trigger off of new bucket PUT events.
+An alternate implementation approach, and one that avoids using API Gateway, would be to post new images directly 
+into a S3 bucket and have your lambda trigger off of new bucket PUT events.
 
-Another observation is that my current implementation of memeify is a memory hog, as all parsing and image processing
-is done in memory.
+Another Note: my current implementation of memeify does all parsing and image processing in memory.
 For example:
 The incoming JSON event data is de-serialized in memory, then the entire request body is extracted from the JSON event 
  and BASE64 decoded into a ByteArray. That ByteArray (containing the actual multipart/form-data) is then also parsed 
  in memory, and finally the actual image data is extracted into another ByteArray and manipulated in memory. 
  
-If memory usage is a concern for you, one alternative option would be to use lambdas `/tmp` disk storage 
+If memory usage is a concern, one alternative option would be to use lambda's `/tmp` disk storage 
 (max size of 512MB) and manipulate your data from disk, trading processing speed for reduced memory usage. 
 On the flip side, you might want your lambda functions to run as fast as possible, as it may 
 [ultimately be cheaper](https://medium.com/@jconning/aws-lambda-faster-is-cheaper-6bf32f58d741) to raise your lambda's
