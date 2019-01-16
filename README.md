@@ -112,13 +112,13 @@ On the flip side, you might want your lambda functions to run as fast as possibl
  memory limit in order to run faster.
 
 ## Frontend Notes
-The frontend module contains a vue.js/npm application for submitting images to memeify. It's basically just an HTML form
- that submits data to API Gateway endpoint. I may eventually use it as a starting point for a fictitious, 
- "meme creating" web-site. 
+The frontend module contains a vue.js/npm application for submitting images to memeify. It's simply an HTML form
+ written in Vue.js/Vuetify that submits form-data to an API Gateway endpoint. I may come back to it and use it as 
+ a starting point for a fictitious, "meme creating" web-site. 
 
 If you have experience with node/npm then you can start the front-end in development mode using the following steps:
     * deploy the memeify stack onto AWS
-    * configure the API gateway URL of the memeify endpoint into the [.env file](frontend/.env)
-    * cd into the `frontend` directory and type the following command
+    * configure the API gateway URL of the memeify endpoint in the [.env file](frontend/.env)
+    * cd into the `frontend` directory and run the node development server
         * `npm run serve`
         * open the development server URL in your browser
