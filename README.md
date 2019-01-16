@@ -86,27 +86,25 @@ Kotlin was chosen as the implementation language as I had used it in the past an
  plenty of examples on image manipulation on the internet. Overall, Kotlin was a joy to work with and the Java 
  integration was flawless. I hope to work with it again.
 
-The first hurdle of this project was getting image data from API Gateway into lambda, without API Gateway munging 
-the data.  After reading dozens of forum posts, I came to understand that API-Gateway did not support 
+Note 1: Getting image data from API Gateway into lambda, without API Gateway munging the data was not as easy as I
+had hoped. After reading dozens of forum posts, I came to understand that API-Gateway did not support 
 multipart/form-data until late 2017. Before that time, you couldn't POST multipart/form-data to API-GW. I am not
-sure how developers worked around this (if it all).  Fortunately, support for multipart/form-data was eventually added
- but you have to manually configure support for it within API Gateway 
+sure how developers worked around this (if it all).  Fortunately, support was eventually added and you have to 
+manually configure support it within API Gateway 
 [settings](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings.html). Basically,
 you tell API Gateway to treat multipart/form-data as binary data and it will automatically BASE64 encode the entire
 multipart/form-data body. The body is then attached to the `ApiGatewayProxyEvent` and sent to your lambda function. 
-This process keeps the image data from being corrupted, but it increases the request size by about 33%. 
+This process keeps the image data from being corrupted, and it also increases your request size by about 33%. This can
+limit the size of images you send thru API gateway (it has a 10MB request size limit). 
+
 An alternate implementation approach, and one that avoids using API Gateway, would be to post new images directly 
 into a S3 bucket and have your lambda trigger off of new bucket PUT events.
 
-Another Note: my current implementation of memeify does all parsing and image processing in memory.
-For example:
-The incoming JSON event data is de-serialized in memory, then the entire request body is extracted from the JSON event 
- and BASE64 decoded into a ByteArray. That ByteArray (containing the actual multipart/form-data) is then also parsed 
- in memory, and finally the actual image data is extracted into another ByteArray and manipulated in memory. 
- 
-If memory usage is a concern, one alternative option would be to use lambda's `/tmp` disk storage 
+Note 2: The Memeify lambda is memory intensive as all processing is done in memory. Including: BASE64 decoding, 
+decoding the multipart/form-data, and the actual image manipulation.
+ If memory usage is a real concern, one alternative option would be to use lambda's `/tmp` disk storage 
 (max size of 512MB) and manipulate your data from disk, trading processing speed for reduced memory usage. 
-On the flip side, you might want your lambda functions to run as fast as possible, as it may 
+On the other hand, it may 
 [ultimately be cheaper](https://medium.com/@jconning/aws-lambda-faster-is-cheaper-6bf32f58d741) to raise your lambda's
  memory limit in order to run faster.
 
