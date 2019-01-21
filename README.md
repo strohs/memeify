@@ -109,13 +109,6 @@ On the other hand, it may
  memory limit in order to run faster.
 
 ## Frontend Notes
-The frontend module contains a vue.js/npm application for submitting images to memeify. It's simply an HTML form
- written in Vue.js/Vuetify that submits form-data to an API Gateway endpoint. I may come back to it and use it as 
- a starting point for a fictitious, "meme creating" web-site. 
-
-If you have experience with node/npm then you can start the front-end in development mode using the following steps:
-    * deploy the memeify stack onto AWS
-    * configure the API gateway URL of the memeify endpoint in the [.env file](frontend/.env)
-    * cd into the `frontend` directory and run the node development server
-        * `npm run serve`
-        * open the development server URL in your browser
+The frontend module contains a vue.js/vuetify HTML form for submitting images to a memeify backend. 
+You must manually configure the Gateway API URL within the page. I may come back to this page in the future and 
+use it as a starting point for a fictitious, "meme creating" web-site. 

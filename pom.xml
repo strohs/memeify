@@ -19,7 +19,7 @@
 
     <modules>
         <module>lambdas</module>
-        <module>frontend</module>
+        <!--<module>frontend</module>-->
     </modules>
 
 </project>
