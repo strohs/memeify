@@ -8,14 +8,16 @@ import com.cliff.memeify.dto.MemeifyResponse
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.io.File
 import java.util.*
 import kotlin.streams.asSequence
 
 /**
  * This lambda will add text to an image file and then save it in a S3 Bucket. It uses the standard Java graphics
- * libraries (Graphics2D, Font, BufferedImage) to do the "memeifying". To keep things simple, all image processing
+ * libraries (Graphics2D, Font, BufferedImage) to do the "memeifying". All image processing
  * is done IN MEMORY, so the size of the image you can process will vary with the size of memory allocated to this
  * lambda. Using a 256MB lambda, I've tested with images <= 1MB in size.
  *
@@ -63,6 +65,10 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         val s3Utils = S3Utils(s3Client)
 
         try {
+            // DEBUG: save request to s3
+            //logIncomingRequest(input)
+            //saveRequestBodyToS3(input, outBucket, context.awsRequestId, s3Client)
+
             // parse and validate the multipart/form-data parameters
             val formData = MemeifyParser.parse(input)
             println("paramsMap size:${formData.paramsMap.size}")
@@ -120,7 +126,6 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
     }
 
 
-
     companion object {
         const val TOP_TEXT_KEY = "topText"  // name of the form field containing text to place on top of the image
         const val BOT_TEXT_KEY = "botText"  // name of the form field containing text to place on the bottom of the image
@@ -135,9 +140,9 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         }
 
         /**
-         * util function to log incoming request details
+         * util function to log incoming request to a log and/or save incoming request to S3
          */
-        fun logIncomingRequest(input: APIGatewayProxyRequestEvent) {
+        fun logIncomingRequest (input: APIGatewayProxyRequestEvent) {
             val contentTypeHeader: String? = input.headers.get("content-type")
             val body: String = input.body
             println("----> content-type: ${contentTypeHeader}")
@@ -145,6 +150,20 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
             println("----> headers")
             input.headers.forEach { k, v -> println("         $k:::$v") }
             println("----> orig body: ${body}")
+        }
+
+        /**
+         * saves the incoming request body to the OUTPUT S3 bucket. The body is BASE64 decoded before saving.
+         * Useful for debugging the Multipart-Form request.
+         * The saved file will have a "-DECODED" suffix appended to its name
+         */
+        fun saveRequestBodyToS3 (input: APIGatewayProxyRequestEvent, bucket: String, key: String, s3Client: S3Client) {
+            // build a PutRequest for decoded data
+            val putReq = PutObjectRequest.builder().bucket(bucket).key("$key-DECODED.txt").build()
+            // decoded the input and save to s3
+            val bodyBytes = Base64.getDecoder().decode(input.body)
+            s3Client.putObject( putReq, RequestBody.fromString( bodyBytes.toString(Charsets.ISO_8859_1), Charsets.ISO_8859_1))
+
         }
     }
 }
