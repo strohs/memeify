@@ -10,15 +10,12 @@ lambda) and S3 to store the final *"memeified"* images.
 
 ## Building
 This is a maven project consisting of two modules: `lambdas` and `frontend`. `Lambdas` contains the 
-lambda code while `frontend` contains a sample web page that I used for playing around with vue.js and AWS
-integration (see the frontend section at the end of this readme for more information)
+lambda code while `frontend` contains a sample web page that I used for playing around with vue.js and AWS.
+(see the frontend section at the end of this readme for more information)
 
 * to build the memeify lambda jar file, cd into the project root directory and run
     * `mvn clean package -pl lambdas`
         * the jar artifact will be built in `lambdas/target/memeify-lambdas-0.1.jar`
-* OPTIONAL - to build everything including the frontend resources
-    * from the project root directory run `mvn clean package`
-
 
 #### Deploying to AWS
 A cloudformation [template](aws/template.yaml) has been provided for creating the Memeify stack. It will create the
@@ -30,13 +27,13 @@ following resources:
 
 Deploy Steps:
 1. build the lambda .jar file (as described above)
-2. copy the lambda code to an S3 bucket
+2. copy the lambda jar to an S3 bucket
 3. run the template in cloudformation and point it to the S3 bucket containing the lambda code
 
 ## Running
 Once the stack is up, you can use the [provided curl script](aws/post-image.sh) to send data to memeify. The script
-will send an image file and two text strings to memeify as multipart/form-data. You must configure the script with
-the API Gateway URL of your memeify endpoint. You can find this in the outputs of the memeify stack or in the API
+will send an image file plus two text strings to memeify as multipart/form-data. You must configure the script with
+the API Gateway URL of your memeify endpoint. You can find this URL in the outputs of the memeify stack or in the API
 Gateway console (look for an API named "memeify). 
 If successful, memeify will return a json response containing a link to the image in s3:
 
@@ -46,10 +43,11 @@ If successful, memeify will return a json response containing a link to the imag
 
 
 ## Memeify Architecture Flow
-Nothing too fancy here. Multipart/form-data is posted to API Gateway, which will BASE64 encode the request body and
- send it on to the memeify lambda as a `ApiGatewayProxyEvent`.  The memeify lambda will extract and parse the 
- form-data, add the passed in text to the top and bottom of the image, and then store the modified image to a 
- S3 bucket.  
+Nothing too fancy here. Multipart/form-data is posted to API Gateway which will BASE64 encode the entire request 
+body and send it to the memeify lambda as a `ApiGatewayProxyEvent`.  The memeify lambda takes the request body, 
+BASE64 decodes it, and then parses the image data and text strings from the multipart form-data. The image is 
+then "memeified" and written to a S3 bucket. Finally, a JSON response containing a URL to the "memeified" image 
+is returned by the lambda.  
  
 ### input
 The memeify lambda expects to receive three fields POSTed as multipart/form-data. The data must contain the following
