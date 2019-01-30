@@ -17,7 +17,7 @@ Resources:
         S3PutEvent:
           Type: S3
           Properties:
-            Bucket: 'strohs-memeify'
+            Bucket: 'rand123qdv-memeify'
             Events: 's3:ObjectCreated:*'
             Filter:
               S3Key:

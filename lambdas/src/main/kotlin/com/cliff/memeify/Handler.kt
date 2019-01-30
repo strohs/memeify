@@ -153,16 +153,20 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         }
 
         /**
-         * saves the incoming request body to the OUTPUT S3 bucket. The body is BASE64 decoded before saving.
+         * saves the incoming request body to the OUTPUT S3 bucket. Two files are saved, the original BASE64 encoded
+         * body and the decoded body.
          * Useful for debugging the Multipart-Form request.
-         * The saved file will have a "-DECODED" suffix appended to its name
+         *
          */
         fun saveRequestBodyToS3 (input: APIGatewayProxyRequestEvent, bucket: String, key: String, s3Client: S3Client) {
-            // build a PutRequest for decoded data
-            val putReq = PutObjectRequest.builder().bucket(bucket).key("$key-DECODED.txt").build()
-            // decoded the input and save to s3
+            //write the BASE64 ENCODED request body to S3
+            val origReq = PutObjectRequest.builder().bucket(bucket).key("$key-ENCODED").build()
+            s3Client.putObject( origReq, RequestBody.fromString( input.body ) )
+
+            // write the BASE64 decoded request body to S3
+            val decodedReq = PutObjectRequest.builder().bucket(bucket).key("$key-DECODED").build()
             val bodyBytes = Base64.getDecoder().decode(input.body)
-            s3Client.putObject( putReq, RequestBody.fromBytes(bodyBytes) )
+            s3Client.putObject( decodedReq, RequestBody.fromBytes(bodyBytes) )
 
         }
     }
