@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  uses SAM to create the Memeify S3 output bucket, Memeify Lambda function, and an API Gateway POST method
+  SAM template that creates the Memeify S3 output bucket, Memeify Lambda function, and an API Gateway POST method
   for receiving images
 Parameters:
   LambdaCodeBucket:

@@ -162,7 +162,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
             val putReq = PutObjectRequest.builder().bucket(bucket).key("$key-DECODED.txt").build()
             // decoded the input and save to s3
             val bodyBytes = Base64.getDecoder().decode(input.body)
-            s3Client.putObject( putReq, RequestBody.fromString( bodyBytes.toString(Charsets.ISO_8859_1), Charsets.ISO_8859_1))
+            s3Client.putObject( putReq, RequestBody.fromBytes(bodyBytes) )
 
         }
     }

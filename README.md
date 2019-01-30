@@ -21,7 +21,7 @@ integration (see the frontend section at the end of this readme for more informa
 
 
 #### Deploying to AWS
-A cloudformation [template](aws/memeify.yaml) has been provided for creating the Memeify stack. It will create the
+A cloudformation [template](aws/template.yaml) has been provided for creating the Memeify stack. It will create the
 following resources:
 * the memeify lambda function, 
 * an API Gateway POST method
