@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  SAM template that creates the Memeify S3 output bucket, Memeify Lambda function, and an API Gateway POST method
-  for receiving images
+  SAM template that creates the Memeify S3 input and output buckets and the Memeify Lambda function
 Parameters:
   LambdaCodeBucket:
     Type: String
@@ -11,26 +10,25 @@ Parameters:
     Type: String
     Description: "name of the memeify lambda .jar"
     Default: "memeify-lambdas-0.1.jar"
-
-Globals:
-  Api:
-    # API Gateway regional endpoints
-    EndpointConfiguration: REGIONAL
-
-    # tells the browser to allow code from any origin to access a resource
-    Cors:
-      AllowOrigin: "'*'"
-
-    # needed so that multipart/form-data will be base64 encoded by API Gateway, (the ~1 is converted to a slash)
-    BinaryMediaTypes:
-      - multipart~1form-data
+  BucketPrefix:
+    Type: String
+    Description: "unique prefix to append to the input and output bucket names"
 
 Resources:
+
+  #Create a bucket to store incoming images, with public write access
+  ImageInputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${BucketPrefix}-input"
+
   # create a bucket, with public read access, that stores memeified images
   ImageOutputBucket:
     Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${BucketPrefix}-output"
 
-  # allows public get object permissions on the ImageOutputBucket
+  # allows public GET object permissions on the ImageOutputBucket
   PublicGetObjectPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -45,7 +43,26 @@ Resources:
               Fn::Join:
                 - ""
                 - - "arn:aws:s3:::"
-                  - Ref: ImageOutputBucket
+                  - !Sub "${BucketPrefix}-output"
+                  - "/*"
+            Principal: "*"
+
+  # allows public PUT object permissions on the ImageInputBucket
+  PublicPutObjectPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ImageInputBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - "s3:PutObject"
+            Effect: "Allow"
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Sub "${BucketPrefix}-input"
                   - "/*"
             Principal: "*"
 
@@ -56,32 +73,29 @@ Resources:
       Runtime: java8
       Timeout: 30
       MemorySize: 256
+      Environment:
+        Variables:
+          INPUT_BUCKET_NAME: !Sub "${BucketPrefix}-input"
+          OUTPUT_BUCKET_NAME: !Sub "${BucketPrefix}-output"
+          MAX_BODY_SIZE_MB: 10
       CodeUri:
         Bucket: !Ref LambdaCodeBucket
         Key: !Ref LambdaCodeKey
-      Policies:
-        # Give this lambda write access to cloudwatch logs
-        - AWSLambdaBasicExecutionRole
-        # Gives the lambda CRUD permissions to objects in the S3 Bucket
-        - S3CrudPolicy:
-            BucketName: !Ref ImageOutputBucket
-      Environment:
-        Variables:
-          OUTPUT_BUCKET_NAME: !Ref ImageOutputBucket
-          MAX_BODY_SIZE_MB: 10
-      # configure the lambda to be triggered by a POST request to API Gateway
+      # Give this lambda access to cloudwatch logs and PutObject/GetObject for our S3 buckets
+      Policies: AWSLambdaExecute
+      # configure the lambda to be triggered when an object is created in the ImageInputBucket
       Events:
-        MemeifyApiPostEvent:
-          Type: Api
+        MemeifyObjectCreatedEvent:
+          Type: S3
           Properties:
-            Path: /memeify
-            Method: Post
+            Bucket: !Ref ImageInputBucket
+            Events: s3:ObjectCreated:*
 
 Outputs:
   LambdaArn:
     Value: !GetAtt MemeifyLambda.Arn
+  InputBucketName:
+    Value: !Ref ImageInputBucket
   OutputBucketName:
     Value: !Ref ImageOutputBucket
-  ApiUrl:
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/memeify"
 

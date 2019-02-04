@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
+import com.amazonaws.services.lambda.runtime.events.S3Event
 import com.cliff.memeify.dto.MemeifyResponse
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -46,84 +47,46 @@ import kotlin.streams.asSequence
  */
 
 
-class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+class Handler : RequestHandler<S3Event, Unit> {
 
     // bucket where the memeified files will be written
     val outBucket = System.getenv("OUTPUT_BUCKET_NAME")
-
-    // jackson mapper for serializing/deserializing JSON
-    val mapper = jacksonObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .configure(DeserializationFeature.UNWRAP_ROOT_VALUE, true)
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL) //do not serialize NULL fields
+    val inBucket = System.getenv("INPUT_BUCKET_NAME")
 
     val s3Client = S3Client.builder().build()
 
 
-    override fun handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent {
-        var response: APIGatewayProxyResponseEvent
+    override fun handleRequest(event: S3Event, context: Context) {
         val s3Utils = S3Utils(s3Client)
 
         try {
             // DEBUG: save request to s3
-            //logIncomingRequest(input)
-            //saveRequestBodyToS3(input, outBucket, context.awsRequestId, s3Client)
+            logEvent(event)
+            println(event.toJson())
 
-            // parse and validate the multipart/form-data parameters
-            val formData = MemeifyParser.parse(input)
-            println("paramsMap size:${formData.paramsMap.size}")
-            println("filesMap size:${formData.filesMap.size}")
+            //get bucket name and object that was created in the bucket
+            val bucket = event.records[0].s3.bucket
+            val obj = event.records[0].s3.`object`
 
-            // get the filename of the image
-            val filename = formData.filesMap.keys.first()
-            println("filename=$filename")
+            //read the object into a ByteArray
+            val image: ByteArray = s3Utils.getObject(bucket.name, obj.key)
 
             // memeify the image
-            val memeifiedBytes = Memeify.memeify(formData.filesMap[filename]!!,
-                    File(filename).extension,
-                    formData.paramsMap[TOP_TEXT_KEY]!!,
-                    formData.paramsMap[BOT_TEXT_KEY]!!)
-            println("memeified bytes ${memeifiedBytes.size}")
+            val memeifiedImage = Memeify.memeify(image,
+                    File(obj.key).extension,
+                    "top text here",
+                    "bottom text here")
 
             // save memeified file, with a random filename prefix, to S3
-            val savedFilename = "${randomString(10)}-$filename"
-            s3Utils.putObject(outBucket, savedFilename, memeifiedBytes)
+            val savedFilename = "${randomString(10)}-${obj.key}"
+            s3Utils.putObject(outBucket, savedFilename, memeifiedImage)
 
-            // build a 200 response containing location of memeified image in S3
-            response = buildResponse(
-                    200,
-                    mutableMapOf(),
-                    mapper.writeValueAsString( MemeifyResponse( s3Utils.buildS3PathUrl(outBucket,savedFilename), null)))
-
-        } catch (ex: IllegalArgumentException) {
-            println(ex)
-            response = buildResponse(
-                    400,
-                    mutableMapOf("X-Amzn-ErrorType" to "IllegalArgumentException"),
-                    mapper.writeValueAsString(MemeifyResponse(null, ex.message)))
         } catch (ex: Exception) {
-            println(ex)
-            response = buildResponse(
-                    400,
-                    mutableMapOf("X-Amzn-ErrorType" to "Exception"),
-                    mapper.writeValueAsString(MemeifyResponse(null, ex.message)))
+            println("an exception occured: $ex")
         }
-        return response
+        return
     }
 
-
-
-    /**
-     * build an APIGatewayProxyResponse object
-     */
-    fun buildResponse(code: Int, headers: MutableMap<String, String>, body: String): APIGatewayProxyResponseEvent {
-        // required for axios to accept responses from API Gateway
-        headers["Access-Control-Allow-Origin"] = "*"
-        return APIGatewayProxyResponseEvent()
-                .withStatusCode(code)
-                .withHeaders(headers)
-                .withBody(body)
-    }
 
 
     companion object {
@@ -140,34 +103,14 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         }
 
         /**
-         * util function to log incoming request to a log and/or save incoming request to S3
+         * util function to log incoming events
          */
-        fun logIncomingRequest (input: APIGatewayProxyRequestEvent) {
-            val contentTypeHeader: String? = input.headers.get("content-type")
-            val body: String = input.body
-            println("----> content-type: ${contentTypeHeader}")
-            println("----> base64encoded? ${input.isBase64Encoded}")
-            println("----> headers")
-            input.headers.forEach { k, v -> println("         $k:::$v") }
-            println("----> orig body: ${body}")
+        fun logEvent (event: S3Event) {
+            val bucket = event.records[0]?.s3?.bucket?.name
+            val obj = event.records[0]?.s3?.`object`?.key
+            val objSize = event.records[0]?.s3?.`object`?.sizeAsLong
+            println("new put bucket:$bucket object:$obj objSize:$objSize ")
         }
 
-        /**
-         * saves the incoming request body to the OUTPUT S3 bucket. Two files are saved, the original BASE64 encoded
-         * body and the decoded body.
-         * Useful for debugging the Multipart-Form request.
-         *
-         */
-        fun saveRequestBodyToS3 (input: APIGatewayProxyRequestEvent, bucket: String, key: String, s3Client: S3Client) {
-            //write the BASE64 ENCODED request body to S3
-            val origReq = PutObjectRequest.builder().bucket(bucket).key("$key-ENCODED").build()
-            s3Client.putObject( origReq, RequestBody.fromString( input.body ) )
-
-            // write the BASE64 decoded request body to S3
-            val decodedReq = PutObjectRequest.builder().bucket(bucket).key("$key-DECODED").build()
-            val bodyBytes = Base64.getDecoder().decode(input.body)
-            s3Client.putObject( decodedReq, RequestBody.fromBytes(bodyBytes) )
-
-        }
     }
 }

@@ -5,6 +5,7 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetBucketLocationRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectResponse
+import java.util.function.Consumer
 
 /**
  * Utilities for working with S3 buckets and objects
@@ -12,7 +13,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse
  * @author Cliff
  */
 class S3Utils(val s3Client: S3Client) {
-
 
     /**
      * put a ByteArray into the specified S3 bucket and give it the specified key name
@@ -23,6 +23,15 @@ class S3Utils(val s3Client: S3Client) {
                 .key(key)
                 .build()
         return s3Client.putObject(putReq, RequestBody.fromBytes(data))
+    }
+
+    /**
+     * gets an object from S3 using the specified bucket/key names and returns it as a ByteArray
+     */
+    fun getObject(bucket: String, key: String): ByteArray {
+        return s3Client
+                .getObjectAsBytes( Consumer { builder -> builder.bucket(bucket).key(key) } )
+                .asByteArray()
     }
 
     /**
