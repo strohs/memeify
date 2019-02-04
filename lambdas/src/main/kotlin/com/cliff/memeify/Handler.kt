@@ -145,7 +145,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         fun logIncomingRequest (input: APIGatewayProxyRequestEvent) {
             val contentTypeHeader: String? = input.headers.get("content-type")
             val body: String = input.body
-            println("----> content-type: ${contentTypeHeader}")
+            println("====> content-type: ${contentTypeHeader}")
             println("----> base64encoded? ${input.isBase64Encoded}")
             println("----> headers")
             input.headers.forEach { k, v -> println("         $k:::$v") }

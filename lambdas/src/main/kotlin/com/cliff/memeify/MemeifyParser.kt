@@ -5,7 +5,7 @@ import java.io.File
 import java.util.*
 
 /**
- * uses MultipartFormParser class to parse multipart/form-data and perform some validation on the submitted parameters
+ * uses MultipartFormParser class to parse multipart/form-data and perform some hooks on the submitted parameters
  *
  * @author Cliff
  */

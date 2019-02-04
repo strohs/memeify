@@ -59,6 +59,12 @@ Resources:
       CodeUri:
         Bucket: !Ref LambdaCodeBucket
         Key: !Ref LambdaCodeKey
+      #see https://github.com/awslabs/serverless-application-model/blob/master/docs/safe_lambda_deployments.rst#instant-traffic-shifting-using-lambda-aliases
+#      AutoPublishAlias: live
+#      DeploymentPreference:
+#        Type: Linear10PercentEvery1Minute
+#        Hooks:
+#          PreTraffic: !Ref memeifyPreTrafficHook
       Policies:
         # Give this lambda write access to cloudwatch logs
         - AWSLambdaBasicExecutionRole
@@ -76,6 +82,35 @@ Resources:
           Properties:
             Path: /memeify
             Method: Post
+
+#  memeifyPreTrafficHook:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      FunctionName: MemeifyValidationHook
+#      Handler: com.cliff.memeify.hooks.MemeifyValidationHook
+#      Runtime: java8
+#      Timeout: 30
+#      MemorySize: 256
+#      CodeUri:
+#        Bucket: !Ref LambdaCodeBucket
+#        Key: !Ref LambdaCodeKey
+#      DeploymentPreference:
+#        Enabled: false
+#      Policies:
+#        - AWSLambdaBasicExecutionRole
+#        - Version: "2012-10-17"
+#          Statement:
+#            - Effect: "Allow"
+#              Action:
+#                - "codedeploy:PutLifecycleEventHookExecutionStatus"
+#              Resource:
+#                !Sub 'arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${ServerlessDeploymentApplication}/*'
+#        - Version: "2012-10-17"
+#          Statement:
+#            - Effect: "Allow"
+#              Action:
+#                - "lambda:InvokeFunction"
+#              Resource: !Ref MemeifyLambda.Version
 
 Outputs:
   LambdaArn:
