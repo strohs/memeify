@@ -20,7 +20,7 @@ class MultipartFormParser(private val boundary: String, private val body: ByteAr
      * The first map of the pair contains the "simple", textual, form fields.
      * The second map contains the "file" data, with the filename mapped to a ByteArray of the actual file data
      */
-    fun parse(): Pair<Map<String,String>, Map<String,ByteArray>> {
+    fun parse(): FormData {
         // map of form field name to form field value
         val paramsMap = mutableMapOf<String,String>()
         // map of image filename to ByteArray of the image
@@ -44,7 +44,7 @@ class MultipartFormParser(private val boundary: String, private val body: ByteAr
                 println("---> mem?:${fi.isInMemory}")
             }
         }
-        return Pair (paramsMap, filesMap)
+        return FormData(paramsMap, filesMap)
     }
 
     override fun getCharacterEncoding(): String {
