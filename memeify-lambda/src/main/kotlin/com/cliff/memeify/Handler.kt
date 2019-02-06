@@ -66,7 +66,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
 
         try {
             // DEBUG: save request to s3
-            logIncomingRequest(input)
+            //logIncomingRequest(input)
             //saveRequestBodyToS3(input, outBucket, context.awsRequestId, s3Client)
 
             // parse and validate the multipart/form-data parameters
