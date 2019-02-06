@@ -4,13 +4,13 @@ Description: >
   SAM template that creates the Memeify S3 output bucket, Memeify Lambda function, and an API Gateway POST method
   for receiving images
 Parameters:
-  LambdaCodeBucket:
+  MemeifyCodeBucket:
     Type: String
-    Description: "name of S3 bucket containing the memeify lambda code"
-  LambdaCodeKey:
+    Description: "name of S3 bucket containing the memeify lambda code and memeify lambda hooks"
+  MemeifyCodeKey:
     Type: String
     Description: "name of the memeify lambda .jar"
-    Default: "memeify-lambdas-0.1.jar"
+    Default: "memeify-lambda-0.1.jar"
 
 Globals:
   Api:
@@ -57,14 +57,14 @@ Resources:
       Timeout: 30
       MemorySize: 256
       CodeUri:
-        Bucket: !Ref LambdaCodeBucket
-        Key: !Ref LambdaCodeKey
+        Bucket: !Ref MemeifyCodeBucket
+        Key: !Ref MemeifyCodeKey
       #see https://github.com/awslabs/serverless-application-model/blob/master/docs/safe_lambda_deployments.rst#instant-traffic-shifting-using-lambda-aliases
 #      AutoPublishAlias: live
 #      DeploymentPreference:
-#        Type: Linear10PercentEvery1Minute
+#        Type: AllAtOnce
 #        Hooks:
-#          PreTraffic: !Ref memeifyPreTrafficHook
+#          PreTraffic: !Ref MemeifyPreTrafficHook
       Policies:
         # Give this lambda write access to cloudwatch logs
         - AWSLambdaBasicExecutionRole
@@ -83,17 +83,21 @@ Resources:
             Path: /memeify
             Method: Post
 
-#  memeifyPreTrafficHook:
+#  MemeifyPreTrafficHook:
 #    Type: AWS::Serverless::Function
 #    Properties:
-#      FunctionName: MemeifyValidationHook
+#      # the default policy created by SAM grants permission to run functions that begin with 'CodeDeployHook'
+#      FunctionName: CodeDeployHook_memeifyValidationHook
 #      Handler: com.cliff.memeify.hooks.MemeifyValidationHook
 #      Runtime: java8
 #      Timeout: 30
 #      MemorySize: 256
 #      CodeUri:
-#        Bucket: !Ref LambdaCodeBucket
-#        Key: !Ref LambdaCodeKey
+#        Bucket: !Ref MemeifyCodeBucket
+#        Key: !Ref MemeifyCodeKey
+#      Environment:
+#        Variables:
+#          MEMEIFY_NEW_VERSION: !Ref MemeifyLambda.Version
 #      DeploymentPreference:
 #        Enabled: false
 #      Policies:
@@ -105,6 +109,7 @@ Resources:
 #                - "codedeploy:PutLifecycleEventHookExecutionStatus"
 #              Resource:
 #                !Sub 'arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${ServerlessDeploymentApplication}/*'
+#        # this policy gives our MemeifyPreTrafficHook permission to invoke the newly deployed Memeify lambda
 #        - Version: "2012-10-17"
 #          Statement:
 #            - Effect: "Allow"

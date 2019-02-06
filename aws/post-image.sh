@@ -9,9 +9,9 @@
 #
 
 # api gateway URL
-URL=https://FILL-IN.execute-api.us-east-1.amazonaws.com/Stage/memeify
+URL=https://FILL-THIS-IN.execute-api.us-east-1.amazonaws.com/Stage/memeify
 
 # posts an image to an API Gateway endpoint using type multipart/form-data
 curl -v -F 'topText=I tried to proxy multipart form data to a lambda once' \
 -F 'botText=I was not amused!' \
--F "image=@../images/grumpy-cat.jpg;type=image/jpeg" $URL
+-F "image=@../images/small.jpg;type=image/jpeg" $URL

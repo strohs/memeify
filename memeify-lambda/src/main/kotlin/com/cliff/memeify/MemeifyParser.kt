@@ -39,7 +39,7 @@ object MemeifyParser {
 
         // API Gateway will Base64 encode the entire body, decode it here into a ByteArray
         val bodyBytes = Base64.getDecoder().decode(input.body)
-        //println("decoded request:${bodyBytes.toString(Charsets.ISO_8859_1)}")
+        //println("decoded request:\n${bodyBytes.toString(Charsets.ISO_8859_1)}")
 
         // use our customized apache commons file upload to parse the fields from the body into Maps
         val formData = MultipartFormParser(boundary, bodyBytes).parse()

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
+ * Test memeify image manipulation
+ *
  * @author Cliff
  */
 internal class MemeifyTest {

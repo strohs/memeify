@@ -66,7 +66,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
 
         try {
             // DEBUG: save request to s3
-            //logIncomingRequest(input)
+            logIncomingRequest(input)
             //saveRequestBodyToS3(input, outBucket, context.awsRequestId, s3Client)
 
             // parse and validate the multipart/form-data parameters
@@ -145,7 +145,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
         fun logIncomingRequest (input: APIGatewayProxyRequestEvent) {
             val contentTypeHeader: String? = input.headers.get("content-type")
             val body: String = input.body
-            println("====> content-type: ${contentTypeHeader}")
+            println("====> content-type::${contentTypeHeader}")
             println("----> base64encoded? ${input.isBase64Encoded}")
             println("----> headers")
             input.headers.forEach { k, v -> println("         $k:::$v") }
@@ -159,7 +159,7 @@ class Handler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyRespo
          *
          */
         fun saveRequestBodyToS3 (input: APIGatewayProxyRequestEvent, bucket: String, key: String, s3Client: S3Client) {
-            //write the BASE64 ENCODED request body to S3
+            //write the BASE64 ENCODED request body to S3 as UTF-8 encoded bytes
             val origReq = PutObjectRequest.builder().bucket(bucket).key("$key-ENCODED").build()
             s3Client.putObject( origReq, RequestBody.fromString( input.body ) )
 

@@ -11,14 +11,14 @@
     <packaging>pom</packaging>
 
     <name>memeify</name>
-    <description>an single page website that adds text to images, powered by AWS, vue.js and vuetify</description>
+    <description>a single page website that adds text to images, powered by AWS, vue.js and vuetify</description>
 
     <properties>
         <main.basedir>${project.basedir}</main.basedir>
     </properties>
 
     <modules>
-        <module>lambdas</module>
+        <module>memeify-lambda</module>
         <!--<module>frontend</module>-->
     </modules>
 

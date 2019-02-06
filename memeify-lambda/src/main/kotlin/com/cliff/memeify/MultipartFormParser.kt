@@ -7,8 +7,11 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory
 import java.io.InputStream
 
 /**
- * Implements Apache Commons FileUpload :: UploadContext interface in order to parse the BODY portion of a
- * multipart/form-data into a Pair of maps
+ * Implements Apache Commons FileUpload::UploadContext interface in order to parse the BODY portion of a
+ * multipart/form-data into a two Maps.
+ *
+ * boundary - is the boundary string that marks the different sections of the multipart/form-data
+ * body - is a ByteArray of the multipart form data that must be encoded as ASCII or (ISO-8859-1)
  *
  * @author Cliff
  */
@@ -16,7 +19,7 @@ class MultipartFormParser(private val boundary: String, private val body: ByteAr
 
 
     /**
-     * parse the submitted form fields into a Pair of Maps.
+     * parse the submitted form fields into a pair of Maps.
      * The first map of the pair contains the "simple", textual, form fields.
      * The second map contains the "file" data, with the filename mapped to a ByteArray of the actual file data
      */
