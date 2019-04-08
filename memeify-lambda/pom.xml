@@ -90,6 +90,7 @@
             <artifactId>lambda</artifactId>
         </dependency>
 
+        <!-- aws codedeploy client -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>codedeploy</artifactId>
@@ -101,6 +102,7 @@
             <!--<artifactId>dynamodb</artifactId>-->
         <!--</dependency>-->
 
+        <!-- s3 SDK -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>

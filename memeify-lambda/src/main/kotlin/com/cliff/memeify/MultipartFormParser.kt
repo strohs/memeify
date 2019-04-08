@@ -32,8 +32,9 @@ class MultipartFormParser(private val boundary: String, private val body: ByteAr
         // parse form parameters from the body
         val factory = DiskFileItemFactory()
         val upload = FileUpload(factory)
-        // Set overall request size constraint and convert to bytes
-        upload.sizeMax = System.getenv("MAX_BODY_SIZE_MB").toLong() * 1024 * 1024
+        // Set default request size constraint to 5MB
+        val maxUploadSize:Long = System.getenv("MAX_BODY_SIZE_MB")?.toLong() ?: 5
+        upload.sizeMax = maxUploadSize * 1024 * 1024 // convert megabytes to bytes
         val fileItems: List<FileItem> = upload.parseRequest(this)
         fileItems.forEach { fi ->
             // is the FileItem a simple form field?
