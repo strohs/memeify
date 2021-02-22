@@ -26,7 +26,7 @@ Globals:
       - multipart~1form-data
 
 Resources:
-  # create a bucket, with public read access, that stores memeified images
+  # create a bucket, with public read access, that stores the final memeified images
   ImageOutputBucket:
     Type: AWS::S3::Bucket
 

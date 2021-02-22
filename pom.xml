@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <name>memeify</name>
-    <description>a single page website that adds text to images, powered by AWS, vue.js and vuetify</description>
+    <description>an example AWS lambda function that adds to text to images</description>
 
     <properties>
         <main.basedir>${project.basedir}</main.basedir>

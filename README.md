@@ -1,45 +1,90 @@
 Memeify
 ================================================================================================================
-Memeify is a AWS lambda function (written in Kotlin) that allows you to create memes by adding text to an 
-image (jpeg or png). It's completely serverless and uses API gateway (to proxy incoming requests to the
-lambda) and S3 to store the final *"memeified"* images. 
+Memeify is a simple AWS lambda function (written in Kotlin) that allows you to create meme images by automating the 
+process of adding text to an image (jpeg or png). It's an example project designed to showcase using AWS Lambda with
+API Gateway and S3.
+
+The mile-high view is as follows:
+1. You submit an image along with text, via HTTP POST, to an API Gateway endpoint.
+2. The memeify lambda function "bakes" the text into the image using the java 2d graphics API. 
+3. The resultant image is saved into an S3 bucket. 
 
 
 ![grumpy-cat](https://github.com/strohs/memeify/blob/master/memeified-grumpy-cat.jpg)
 
 
-## Building
-This is a maven project consisting of two modules: `lambdas` and `frontend`. `Lambdas` contains the 
-lambda code while `frontend` contains a sample web page that I used for playing around with vue.js and AWS.
-(see the frontend section at the end of this readme for more information)
+## Prerequisites
+- Java 1.8 (OpenJDK 1.8 was used in this project)
+- Apache Maven (I used maven 3.5, versions >= 3 might work)
+- An AWS account along with experience with S3, CloudFormation. 
+  Specifically, you will need to be familiar with creating/accessing S3 bucket(s) and be able to deploy CloudFormation 
+  templates.
+- API Gateway knowledge is nice to have, but not a strict requirement. You should be able to access the API Gateway
+  management console to verify that the memeify endpoint was created
 
-* to build the memeify lambda jar file, cd into the project root directory and run
-    * `mvn clean package -pl lambdas`
-        * the jar artifact will be built in `lambdas/target/memeify-lambdas-0.1.jar`
 
-#### Deploying to AWS
+
+### Building the memeify-lambda .jar file
+Memeify is a maven project consisting of two sub-modules: `lambdas` and `frontend`. `Lambdas` contains the lambda hooks 
+and image processing code, while `frontend` contains a sample web page that can be used to submit an image and 
+text to memeift via an HTTP form.
+
+1. to build the memeify lambda jar file, cd into the project root directory and run
+    - `mvn clean package -pl memeify-lambda`
+    - the jar artifact will be built in `memeify-lambda/target/memeify-lambda-0.1.jar`
+
+
+
+### Deploying to AWS
 A cloudformation [template](aws/template.yaml) has been provided for creating the Memeify stack. It will create the
 following resources:
-* the memeify lambda function, 
+* the memeify lambda function
 * an API Gateway POST method
-* a S3 bucket for storing the memeified images
-    * Note that **this S3 bucket will have public read access**
+* a S3 bucket for storing the final memeified images
+    * Note that **this S3 bucket will be given public read access**
 
 Deploy Steps:
-1. build the lambda .jar file (as described above)
-2. copy the lambda jar to an S3 bucket
-3. run the template in cloudformation and point it to the S3 bucket containing the lambda code
+1. build the `memeify-lambda-0.1.jar` file (as described above)
+2. create a temporary S3 bucket (or use an existing one) and copy the `memeify-lambda-0.1.jar` to it. 
+3. use CloudFormation to create the memeify stack by uploading the provided [template](aws/template.yaml) to CloudFormation:
+    - you will need to provide three parameters in the CloudFormation console:
+        - the stack name, for example: "MyMemeifyStack"
+        - the name of the S3 bucket (created in step 2) containing containing the `memeify-lambda-0.1.jar`
+        - the actual name of the memeify .jar file. This will default to `memeify-lambda-0.1.jar` so you only need
+          to change this if you renamed of the .jar file
+    - once the above parameters are provided the stack will be ready for creation, and you can accept the rest of the
+    cloudformation defaults.
+    - If all went well, the stack will have created the following resources:
+        - An API Gateway endpoint `/memeify`, that accepts POST requests
+        - a public S3 bucket to hold the final memefied images, i.e.: "mymemifystack-imageoutputbucket-ab5334bnf" 
+        - the memeify lambda function: i.e.: "MyMemeifyStack-MemeifyLambda-34GZG44"
+    - The outputs section (within the CloudFormation management console) will contain the ApiUrl that can be used
+      to submit images to memeify, for example: https://dfXDFA34asdf.execute-api.us-east-1.amazonaws.com/Stage/memeify
+      
 
-## Running
-Once the stack is up, you can use the [provided curl script](aws/post-image.sh) to send data to memeify. The script
+### Running
+Once the stack is deployed, I've provided two ways to send images to memeify:
+
+#### Option 1 - use the provided curl script
+you can use the [provided curl script](aws/post-image.sh) to send data to memeify. The script
 will send an image file plus two text strings to memeify as multipart/form-data. You must configure the script with
-the API Gateway URL of your memeify endpoint. You can find this URL in the outputs of the memeify stack or in the API
-Gateway console (look for an API named "memeify). 
+the API Gateway URL of your memeify endpoint. You can find this URL in the outputs section of the memeify stack (within
+ the CloudFormation console).
 If successful, memeify will return a json response containing a link to the image in s3:
 
 ```json
 { "imageUrl" : "https://s3.amazonaws.com/memeify-imageoutputbucket-AABBCC/VHERDZTFLS-grumpy-cat.jpg"}
 ``` 
+
+You should then be able to put this URL into a web-browser and view the image
+
+
+#### Option 2 - use the provided HTTP Page
+There is a sample [HTTP page](frontend/index.html) that can be used to submit your image and text via an HTML form. 
+The page uses the javascript fetch API to submit data to the memeify API endpoint (as multipart form-data) and then
+displays the final, "memeified", image within the page. Before using the page, you must edit its javascript code with
+ your memeify API URL. This url is shown in the outputs section of the memeify stack. Simply open the index.html page
+and search for the text: "TODO"
 
 
 ## Memeify Architecture Flow
@@ -72,23 +117,23 @@ Or, if an error occurs, JSON containing the error message will be returned:
 ```
 
 
+
 ## Notes and Observations
-This project started as a practice application to help me study for an AWS Developer Certification. The exam
-featured many questions on AWS serverless, and building an actual application was the best way to learn. Specifically,
-I wanted to learn how AWS Proxy Integration worked between API-GW and Lambda (even though the exam does not go into 
+This project started as a practice application to help me study for an AWS Developer Certification. Specifically,
+I wanted to learn how AWS Proxy Integration worked between API-GateWay and Lambda (even though the exam does not go into 
 that level of detail).
 
 Kotlin was chosen as the implementation language as I had used it in the past and wanted to explore 
- how to use it within a Lambda. The Kotlin code uses Java's *BufferedImage*, *Font* and *Graphics2d* classes for all 
+ how to use it with AWS Lambda. The Kotlin code uses Java's *BufferedImage*, *Font* and *Graphics2d* classes for all 
  image manipulation. This was relatively easy to do, as these libraries have been around for years and there are 
- plenty of examples on image manipulation on the internet. Overall, Kotlin was a joy to work with and the Java 
- integration was flawless. I hope to work with it again.
+ plenty of examples on image manipulation on the internet. Overall, Kotlin was easy to work with, and the Java 
+ integration was flawless.
 
 Note 1: Getting image data from API Gateway into lambda, without API Gateway munging the data was not as easy as I
 had hoped. After reading dozens of forum posts, I came to understand that API-Gateway did not support 
 multipart/form-data until late 2017. Before that time, you couldn't POST multipart/form-data to API-GW. I am not
-sure how developers worked around this (if it all).  Fortunately, support was eventually added and you have to 
-manually configure support it within API Gateway 
+sure how developers worked around this (if it all).  Fortunately, support was eventually added and today you have to 
+manually configure support for it within API Gateway 
 [settings](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings.html). Basically,
 you tell API Gateway to treat multipart/form-data as binary data and it will automatically BASE64 encode the entire
 multipart/form-data body. The body is then attached to the `ApiGatewayProxyEvent` and sent to your lambda function. 
@@ -105,8 +150,3 @@ decoding the multipart/form-data, and the actual image manipulation.
 On the other hand, it may 
 [ultimately be cheaper](https://medium.com/@jconning/aws-lambda-faster-is-cheaper-6bf32f58d741) to raise your lambda's
  memory limit in order to run faster.
-
-## Frontend Notes
-The frontend module contains a vue.js/vuetify HTML form for submitting images to a memeify backend. 
-You must manually configure the Gateway API URL within the page. I may come back to this page in the future and 
-use it as a starting point for a fictitious, "meme creating" web-site. 

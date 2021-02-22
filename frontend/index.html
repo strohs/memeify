@@ -1,180 +1,155 @@
 <!DOCTYPE html>
 <!--
-This is a single page Vue.js application consisting of a single HTML form. It can be used to select an image
- (stored locally on your machine) and submit it to the memeify backend.
- You must manually configure the memeify API Gateway Endpoint in the javascript below
+This is an example html form that you can use to select an image (stored locally on your machine) and submit it
+to the memeify api endpoint. It uses the Bulma CSS framework for styling.
+ NOTE:  You must manually configure the memeify API Gateway Endpoint in the javascript below. Search for the text TODO
 -->
 <html lang="en">
 <head>
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
-    <meta charset="UTF-8" name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Memeify</title>
 </head>
 <body>
-<div id="app">
-    <v-app>
 
-        <v-toolbar app color="primary lighten-1">
-            <v-toolbar-title class="headline">Memeify</v-toolbar-title>
-        </v-toolbar>
-        <v-content>
-            <v-container>
+<section>
+    <div class="container">
+        <h1 class="title is-2">Memeify</h1>
 
-                <v-layout justify-center column>
-                    <v-flex xs12 sm8 md4>
 
-                        <v-img
-                                :src="imageSrc" contain>
-                        </v-img>
+        <!-- top text -->
+        <div class="field">
+            <label class="label">Top Text</label>
+            <div class="control">
+                <input id="top-text" name="topText"  maxlength="75" class="input" type="text" placeholder="Top image text <= 75 chars">
+            </div>
+        </div>
 
-                        <v-alert
-                                :value="showAlert"
-                                color="error"
-                                icon="warning"
-                                outline
-                        >
-                            {{ alertMsg }}
-                        </v-alert>
+        <!-- bottom text -->
+        <div class="field">
+            <label class="label">Bottom Text</label>
+            <div class="control">
+                <input id="bot-text" name="botText" maxlength="75" class="input" type="text" placeholder="Bottom image text <= 75 chars">
+            </div>
+        </div>
 
-                        <v-form ref="form" v-model="valid" lazy-validation>
-                            <v-text-field
-                                    v-model="topText"
-                                    :rules="topTextRules"
-                                    :counter="75"
-                                    label="Top Text"
-                                    required
-                            ></v-text-field>
-                            <v-text-field
-                                    v-model="botText"
-                                    :rules="botTextRules"
-                                    :counter="75"
-                                    label="Bottom Text"
-                                    required
-                            ></v-text-field>
+        <!-- image preview -->
+        <div class="field">
+            <label class="label">Image</label>
+            <figure class="image is-128x128">
+                <img id="image" src="grumpy-cat.jpg">
+            </figure>
+        </div>
 
-                            <v-layout row>
+        <!-- file upload button -->
+        <div class="field">
+            <div class="file is-info has-name">
+                <label class="file-label">
+                    <input id="file-upload" class="file-input" type="file" name="image" accept="image/png, image/jpeg">
+                    <span class="file-cta">
+                      <span class="file-label">
+                        Image file
+                      </span>
+                    </span>
+                    <span id="file-name" class="file-name">grumpy-cat.jpg</span>
+                </label>
+            </div>
+        </div>
 
-                                <v-btn fab small @click.native="openFileDialog">
-                                    <v-icon>add_photo_alternate</v-icon>
-                                </v-btn>
-                                <v-text-field
-                                        label="Upload Image"
-                                        :value="imageFile.name"
-                                        disabled
-                                ></v-text-field>
-                                <input id="imageUpload" type="file" accept="image/*" style="display:none"
-                                       @change="onImageSelect">
-                            </v-layout>
+        <div class="block"></div>
 
-                            <v-btn
-                                    :disabled="!valid"
-                                    :loading="uploading"
-                                    @click="submit"
-                            >
-                                Memeify!
-                            </v-btn>
-                            <v-btn @click="clear">clear</v-btn>
-                        </v-form>
-                    </v-flex>
-                </v-layout>
+        <div class="field is-grouped">
+            <div class="control">
+                <button id="submit-btn" class="button is-link">Submit!</button>
+            </div>
+            <div class="control">
+                <button class="button is-link is-light">Cancel</button>
+            </div>
+        </div>
 
-            </v-container>
-        </v-content>
+        <div class="block">
+            <h1 hidden id="status-msg" class="is-3">status message</h1>
+        </div>
 
-        <v-footer
-                height="auto"
-                color="primary lighten-2"
-        >
-            <v-flex
-                    py-3
-                    text-xs-center
-                    xs12
-            >
-                &copy;2018 — <strong>Memeify</strong>
-            </v-flex>
-        </v-footer>
+        <div class="block"></div>
+    </div>
+</section>
 
-    </v-app>
-</div>
+<section>
+    <div hidden id="result" class="container">
+        <div class="columns">
+            <div class="column is-half">
+                <h1 class="title is-3">Memeify Result</h1>
+                <figure class="image is-4by3">
+                    <img id="image-result" src="" w>
+                </figure>
+            </div>
+        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    </div>
+</section>
+
 <script>
+    // TODO configure you API Gateway endpoint here, this can be found in the outputs section of the CloudFormation console
+    const apiUrl = 'https://CONFIGURE-ME.execute-api.us-east-1.amazonaws.com/Stage/memeify';
 
-    new Vue({
-        el: '#app',
-        data: () => ({
-            valid: true,
-            showAlert: false,
-            // is an image currently being uploaded to the backend
-            uploading: false,
-            alertMsg: '',
-            // TODO configure the API endpoint here
-            apiUrl: 'https://SOME-ENDPOINT.execute-api.us-east-1.amazonaws.com/Stage/memeify',
-            topText: '',
-            botText: '',
-            imageSrc: 'grumpy-cat.jpg',
-            imageFile: {name: 'select a file to upload'},
-            topTextRules: [
-                v => !!v || 'top text is required',
-                v => (v && v.length <= 75) || `Top Text must be less than 75 characters`
-            ],
-            botTextRules: [
-                v => !!v || 'bottom text is required',
-                v => (v && v.length <= 75) || `Bottom Text must be less than 75 characters`
-            ]
-        }),
 
-        methods: {
-            submit() {
-                if (this.$refs.form.validate() && this.validImageFile(this.imageFile)) {
-                    const data = new FormData()
-                    data.append('topText', this.topText)
-                    data.append('botText', this.botText)
-                    data.append('image', this.imageFile)
-                    this.uploading = true
-                    axios.post(this.apiUrl, data)
-                        .then(resp => {
-                            console.log('response', resp)
-                            this.imageSrc = resp.data.imageUrl
-                        })
-                        .catch(err => {
-                            console.log('error message', err)
-                        })
-                        .finally(() => this.uploading = false)
-                }
-            },
-            clear() {
-                this.$refs.form.reset()
-            },
-            openFileDialog() {
-                document.getElementById('imageUpload').click()
-            },
-            onImageSelect(evt) {
-                // preview the selected image
-                const reader = new FileReader()
-                reader.addEventListener('load', () => {
-                    this.imageSrc = reader.result
-                }, false)
-                reader.readAsDataURL(evt.target.files[0])
-                this.imageFile = evt.target.files[0]
-            },
-            validImageFile(file) {
-                // images must me <= 1MB
-                if (file.size > 1048576) {
-                    this.alertMsg = `image size must be <= 1MB (selected image is ${Math.round(file.size / 1048576)}MB)`
-                    this.showAlert = true
-                    return false
-                } else {
-                    this.showAlert = false
-                    return true
-                }
-            }
-        }
-    })
+    const fileUpload = document.getElementById("file-upload");
+    fileUpload.addEventListener("change", onImageSelect, false);
+
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.addEventListener("click", submitImage, false);
+
+    // listen for image file changes and update dom elements accordingly
+    function onImageSelect() {
+        // get info on the chosen file
+        const file = this.files[0];
+        console.log(file);
+
+        // display the file name and size in the file-name label
+        const fileName = document.getElementById("file-name");
+        fileName.textContent = `${file.name} (${file.size} bytes)`;
+
+        // display the selected image in the image preview
+        const image = document.getElementById("image");
+        const reader = new FileReader();
+        reader.onload = (function(aImg) {
+            return function (e) {
+                aImg.src = e.target.result;
+            };
+        })(image);
+        reader.readAsDataURL(file);
+    }
+
+    // submit form data using the fetch API
+    function submitImage() {
+        const data = new FormData();
+        data.append('topText', document.getElementById("top-text").value);
+        data.append('botText', document.getElementById("bot-text").value);
+        data.append('image', document.getElementById("file-upload").files[0]);
+
+        // display the status message
+        const statusMsg = document.getElementById("status-msg");
+        statusMsg.innerText = `submitting image to ${apiUrl}...`;
+        statusMsg.hidden = false;
+
+        fetch(apiUrl, {
+            method: 'POST',
+            body: data
+        })
+        .then(resp => resp.json())
+        .then(result => {
+            console.log('Success:', result);
+            statusMsg.innerText = `image stored in S3 at ${result.imageUrl}`;
+            document.getElementById("image-result").src = result.imageUrl;
+            document.getElementById("result").hidden = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        })
+    }
+
 </script>
 </body>
 </html>
