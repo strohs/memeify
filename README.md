@@ -24,7 +24,7 @@ The mile-high view is as follows:
 
 
 
-### Building the memeify-lambda.jar file
+## Building the memeify-lambda.jar file
 Memeify is a maven project consisting of two sub-modules: `memeify-lambda` and `frontend`. `memeify-lambda` contains 
 the lambda hooks and image processing code, while `frontend` contains a sample web page that can be used to submit an 
 image and text to memeify via an HTML form.
@@ -35,7 +35,7 @@ image and text to memeify via an HTML form.
 
 
 
-### Deploying to AWS
+## Deploying to AWS
 A cloudformation [template](aws/template.yaml) has been provided for creating the Memeify stack. It will create the
 following resources:
 * the memeify lambda function (configured with 256MB of memory)
@@ -50,8 +50,8 @@ Deploy Steps:
     - you will need to provide three parameters in the CloudFormation console:
         - the stack name, for example: "MyMemeifyStack"
         - the name of the S3 bucket (created in step 2) containing containing the `memeify-lambda-0.1.jar`
-        - the actual name of the memeify .jar file. This will default to `memeify-lambda-0.1.jar` so you only need
-          to change this if you renamed of the .jar file
+        - the name of the memeify lambda .jar file. This will default to `memeify-lambda-0.1.jar` so you only need
+          to change this if you renamed the .jar file
     - once the above parameters are provided the stack will be ready for creation, and you can accept the rest of the
     cloudformation defaults.
     - If all went well, the stack will have created the following resources:
@@ -63,7 +63,7 @@ Deploy Steps:
       
 
 ### Running
-Once the stack is deployed, I've provided two ways to send images to memeify. You can either use curl to POST your
+Once the stack is deployed, I've provided two example ways to send images to memeify. You can either use curl to POST your
 image and text, or use the example HTML page to submit your image via an HTML form.  Both approaches will require you
 to edit the script (or html page) with the memeify API Gateway endpoint. This can be found in the outputs section of
 the stack (within the cloudformation management console).
