@@ -24,14 +24,14 @@ The mile-high view is as follows:
 
 
 
-### Building the memeify-lambda .jar file
-Memeify is a maven project consisting of two sub-modules: `lambdas` and `frontend`. `Lambdas` contains the lambda hooks 
-and image processing code, while `frontend` contains a sample web page that can be used to submit an image and 
-text to memeify via an HTML form.
+### Building the memeify-lambda.jar file
+Memeify is a maven project consisting of two sub-modules: `memeify-lambda` and `frontend`. `memeify-lambda` contains 
+the lambda hooks and image processing code, while `frontend` contains a sample web page that can be used to submit an 
+image and text to memeify via an HTML form.
 
 1. to build the memeify lambda jar file, cd into the project root directory and run
     - `mvn clean package -pl memeify-lambda`
-    - the jar artifact will be built in `memeify-lambda/target/memeify-lambda-0.1.jar`
+    - the jar artifact will be built at `memeify-lambda/target/memeify-lambda-0.1.jar`
 
 
 
