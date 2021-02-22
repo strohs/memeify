@@ -5,9 +5,9 @@ process of adding text to an image (jpeg or png). It's an example project design
 API Gateway and S3.
 
 The mile-high view is as follows:
-1. You submit an image along with text, via HTTP POST, to an API Gateway endpoint.
-2. The memeify lambda function "bakes" the text into the image using the java 2d graphics API. 
-3. The resultant image is saved into an S3 bucket. 
+1. You submit an image along with text to be placed into the image, via an HTTP POST request, to an API Gateway endpoint
+2. The memeify lambda function "bakes" the text into the image using the java 2d graphics API 
+3. The resultant image is saved into an S3 bucket
 
 
 ![grumpy-cat](https://github.com/strohs/memeify/blob/master/memeified-grumpy-cat.jpg)
@@ -27,7 +27,7 @@ The mile-high view is as follows:
 ### Building the memeify-lambda .jar file
 Memeify is a maven project consisting of two sub-modules: `lambdas` and `frontend`. `Lambdas` contains the lambda hooks 
 and image processing code, while `frontend` contains a sample web page that can be used to submit an image and 
-text to memeift via an HTTP form.
+text to memeify via an HTML form.
 
 1. to build the memeify lambda jar file, cd into the project root directory and run
     - `mvn clean package -pl memeify-lambda`
@@ -38,7 +38,7 @@ text to memeift via an HTTP form.
 ### Deploying to AWS
 A cloudformation [template](aws/template.yaml) has been provided for creating the Memeify stack. It will create the
 following resources:
-* the memeify lambda function
+* the memeify lambda function (configured with 256MB of memory)
 * an API Gateway POST method
 * a S3 bucket for storing the final memeified images
     * Note that **this S3 bucket will be given public read access**
@@ -63,13 +63,19 @@ Deploy Steps:
       
 
 ### Running
-Once the stack is deployed, I've provided two ways to send images to memeify:
+Once the stack is deployed, I've provided two ways to send images to memeify. You can either use curl to POST your
+image and text, or use the example HTML page to submit your image via an HTML form.  Both approaches will require you
+to edit the script (or html page) with the memeify API Gateway endpoint. This can be found in the outputs section of
+the stack (within the cloudformation management console).
+Please be aware that you should not submit images > 2 MegaBytes in size. This is because the memeify lambda is 
+(by default) configured with 256 MB of memory and all image processing is done... in memory. If you wish to use larger 
+images, you will need to increase the lambda's memory.
+
 
 #### Option 1 - use the provided curl script
-you can use the [provided curl script](aws/post-image.sh) to send data to memeify. The script
-will send an image file plus two text strings to memeify as multipart/form-data. You must configure the script with
-the API Gateway URL of your memeify endpoint. You can find this URL in the outputs section of the memeify stack (within
- the CloudFormation console).
+you can use the [provided curl script](aws/post-image.sh) to send data to your memeify endpoint. The script
+will send an image file plus two text strings to memeify as multipart/form-data. Before running you must configure the 
+script with your memeify API Gateway endpoint.
 If successful, memeify will return a json response containing a link to the image in s3:
 
 ```json
@@ -83,8 +89,7 @@ You should then be able to put this URL into a web-browser and view the image
 There is a sample [HTTP page](frontend/index.html) that can be used to submit your image and text via an HTML form. 
 The page uses the javascript fetch API to submit data to the memeify API endpoint (as multipart form-data) and then
 displays the final, "memeified", image within the page. Before using the page, you must edit its javascript code with
- your memeify API URL. This url is shown in the outputs section of the memeify stack. Simply open the index.html page
-and search for the text: "TODO"
+ your memeify API URL. Simply open the index.html page and search for the text: "TODO"
 
 
 ## Memeify Architecture Flow
