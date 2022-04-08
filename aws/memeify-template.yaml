@@ -6,7 +6,7 @@ Description: >
 Parameters:
   MemeifyCodeBucket:
     Type: String
-    Description: "name of S3 bucket containing the memeify lambda code and memeify lambda hooks"
+    Description: "name of S3 bucket containing the memeify lambda .jar file"
   MemeifyCodeKey:
     Type: String
     Description: "name of the memeify lambda .jar"

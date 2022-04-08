@@ -19,7 +19,6 @@
 
     <modules>
         <module>memeify-lambda</module>
-        <!--<module>frontend</module>-->
     </modules>
 
 </project>

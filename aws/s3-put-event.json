@@ -1,0 +1,40 @@
+{
+  "Records": [
+    {
+      "awsRegion": "us-east-1",
+      "eventName": "ObjectCreated:Put",
+      "eventSource": "aws:s3",
+      "eventTime": "2019-01-31T20:58:38.234Z",
+      "eventVersion": "2.1",
+      "requestParameters": {
+        "sourceIPAddress": "69.132.37.2"
+      },
+      "responseElements": {
+        "x-amz-id-2": "TpRlWrA1V+oi8G3mEWpM+7xqME8STUFUmMCohkn1JVvmlM9O79hYhX0A5Y+0ZSI9nwBZdQZtCp8=",
+        "x-amz-request-id": "D6D817AE64EAED90"
+      },
+      "s3": {
+        "configurationId": "00b01778-53dc-4f32-ae68-8bd9f27262ef",
+        "bucket": {
+          "name": "strohs-memeify-input",
+          "ownerIdentity": {
+            "principalId": "A3GPWSWQB7U1S1"
+          },
+          "arn": "arn:aws:s3:::strohs-memeify-input"
+        },
+        "object": {
+          "key": "laptop.jpg",
+          "size": 22771,
+          "eTag": "2338c5fc6ce346e2900a3d414aa229ba",
+          "versionId": "",
+          "sequencer": "005C53617E1DF62A8F",
+          "urlDecodedKey": "laptop.jpg"
+        },
+        "s3SchemaVersion": "1.0"
+      },
+      "userIdentity": {
+        "principalId": "AWS:AIDAIPM5ZNX7ADPMDNIHK"
+      }
+    }
+  ]
+}

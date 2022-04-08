@@ -13,7 +13,8 @@ object MemeifyParser {
 
     // currently supporting only jpg and png ....for now
     val validFileTypes = setOf("jpg", "png")
-    val MAX_CHARS_PER_LINE = 75                    // character limit for each line of text in an image
+    // character limit for each line of text in an image
+    const val MAX_CHARS_PER_LINE = 75
 
     /**
      * extracts the multipart/form-input from the request body, verifies required fields are present

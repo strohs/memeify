@@ -7,7 +7,7 @@ to the memeify api endpoint. It uses the Bulma CSS framework for styling.
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Memeify</title>
 </head>
@@ -34,27 +34,28 @@ to the memeify api endpoint. It uses the Bulma CSS framework for styling.
             </div>
         </div>
 
-        <!-- image preview -->
-        <div class="field">
-            <label class="label">Image</label>
-            <figure class="image is-128x128">
-                <img id="image" src="grumpy-cat.jpg">
-            </figure>
-        </div>
-
-        <!-- file upload button -->
-        <div class="field">
-            <div class="file is-info has-name">
-                <label class="file-label">
-                    <input id="file-upload" class="file-input" type="file" name="image" accept="image/png, image/jpeg">
-                    <span class="file-cta">
-                      <span class="file-label">
-                        Image file
-                      </span>
-                    </span>
-                    <span id="file-name" class="file-name">grumpy-cat.jpg</span>
-                </label>
+        <!-- image preview and image upload button-->
+        <div class="mt-5 columns is-vcentered">
+            <div class="column is-4">
+                <div class="file is-info has-name">
+                    <label class="file-label">
+                        <input id="file-upload" class="file-input" type="file" name="image" accept="image/png, image/jpeg">
+                        <span class="file-cta">
+                              <span class="file-label">
+                                Select an Image File
+                              </span>
+                            </span>
+                        <span id="file-name" class="file-name"></span>
+                    </label>
+                </div>
             </div>
+
+            <div class="column is-3">
+                <figure class="image is-128x128">
+                    <img id="image" src="" alt="Image Preview">
+                </figure>
+            </div>
+
         </div>
 
         <div class="block"></div>
@@ -92,7 +93,7 @@ to the memeify api endpoint. It uses the Bulma CSS framework for styling.
 
 <script>
     // TODO configure you API Gateway endpoint here, this can be found in the outputs section of the CloudFormation console
-    const apiUrl = 'https://CONFIGURE-ME.execute-api.us-east-1.amazonaws.com/Stage/memeify';
+    const apiUrl = 'https://EXAMPLE.execute-api.us-east-1.amazonaws.com/Stage/memeify';
 
 
     const fileUpload = document.getElementById("file-upload");
