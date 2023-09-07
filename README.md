@@ -22,7 +22,7 @@ The mile-high architectural view is as follows:
 
 
 ## Prerequisites
-- Java 1.8 installed (OpenJDK 1.8 was used during development and testing)
+- Java 1.17 installed (Temurin Java 17 was used during development and testing)
 - Apache Maven (at least maven 3.5, versions greater than 3.5 should work)
 - An AWS account along with experience using AWS. You should know how to use the AWS console and be familiar with CloudFormation and S3. 
   Specifically, you will need to be familiar with creating/accessing S3 bucket(s) and be able to deploy CloudFormation 
