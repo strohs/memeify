@@ -26,9 +26,15 @@ Globals:
       - multipart~1form-data
 
 Resources:
-  # create a bucket, with public read access, that stores the final memeified images
+  # create a bucket, with public read access, that stores the final "memeified" images
   ImageOutputBucket:
     Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
 
   # allows public get object permissions on the ImageOutputBucket
   PublicGetObjectPolicy:
@@ -53,7 +59,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: com.cliff.memeify.Handler::handleRequest
-      Runtime: java8
+      Runtime: java17
       Timeout: 30
       MemorySize: 256
       CodeUri:

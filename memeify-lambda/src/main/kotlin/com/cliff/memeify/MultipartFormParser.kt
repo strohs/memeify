@@ -8,13 +8,14 @@ import java.io.InputStream
 
 /**
  * Implements Apache Commons FileUpload::UploadContext interface in order to parse the BODY portion of a
- * multipart/form-data into a two Maps.
+ * multipart/form-data into two Maps.
  *
  * boundary - is the boundary string that marks the different sections of the multipart/form-data
  * body - is a ByteArray of the multipart form data that must be encoded as ASCII or (ISO-8859-1)
  *
  * @author Cliff
  */
+@Suppress("OverrideDeprecatedMigration")
 class MultipartFormParser(private val boundary: String, private val body: ByteArray): UploadContext {
 
 
@@ -59,6 +60,7 @@ class MultipartFormParser(private val boundary: String, private val body: ByteAr
     override fun contentLength(): Long {
         return body.size.toLong()
     }
+
 
     override fun getContentLength(): Int {
         return -1

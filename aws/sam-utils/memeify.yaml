@@ -5,7 +5,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: com.cliff.memeify.Handler
-      Runtime: java8
+      Runtime: java17
       Timeout: 30
       MemorySize: 256
       CodeUri: ../../lambdas/target/memeify-lambdas-0.1.jar

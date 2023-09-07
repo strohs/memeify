@@ -22,7 +22,7 @@ The mile-high architectural view is as follows:
 
 
 ## Prerequisites
-- Java 1.8 installed (OpenJDK 1.8 was used to develop and test)
+- Java 1.8 installed (OpenJDK 1.8 was used during development and testing)
 - Apache Maven (at least maven 3.5, versions greater than 3.5 should work)
 - An AWS account along with experience using AWS. You should know how to use the AWS console and be familiar with CloudFormation and S3. 
   Specifically, you will need to be familiar with creating/accessing S3 bucket(s) and be able to deploy CloudFormation 
@@ -44,6 +44,11 @@ Building Memeify consists of the following steps:
 to build the memeify lambda jar file, cd into the project root directory and run the following maven command
     - `mvn clean package -pl memeify-lambda`
     - the jar artifact will be built and then saved at `memeify-lambda/target/memeify-lambda-0.1.jar`
+
+### Copy the lambda .jar file and Cloudformation to an S3 bucket
+- copy the `memeify-lambda-0.1.jar` file and the CloudFormation [template](aws/memeify-template.yaml) file to an
+s3 bucket of your choosing. This bucket is used as a staging area so that CloudFormation can find and deploy the 
+lambda function
     
 ### Deploying to AWS
 Deploy Steps:
