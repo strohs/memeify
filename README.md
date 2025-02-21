@@ -12,9 +12,9 @@ much more basic functionality.
 
 The mile-high architectural view is as follows:
 1. A user submits an image file, along with text to be placed into the image, via an HTTP POST request to an AWS API Gateway endpoint.
-2. API Gateway receives the image and text as multipart/form data and send it to the memeify lambda function
+2. API Gateway receives the image and text as multipart/form data and sends it to the memeify lambda function
 3. The memeify lambda function validates the image and text to make sure it doesn't exceed size limitations, and if everything is ok, it
-   will "bake" the text into the image and then save the image into an S3 bucket. If an error occured, a JSON response with a description
+   will "bake" the text into the image and then save the image into an S3 bucket. If an error occurred, a JSON response with a description
    of the error is returned to the caller.
 
 
@@ -34,23 +34,23 @@ The mile-high architectural view is as follows:
 ## Building
 Building Memeify consists of the following steps:
 1. build the `memeify-lambda-0.1.jar` file using java and maven
-2. copying the memeify lamda .jar file and CloudFormation [template](aws/memeify-template.yaml) to one of your S3 buckets
-3. using CloudFormation to build the memeify stack, which will create:
+2. copy the memeify lamda .jar file and CloudFormation [template](aws/memeify-template.yaml) to one of your S3 buckets
+3. use CloudFormation to build the memeify stack, which will create:
    1. the memeify lambda function
-   2. an API Gateway Endpoint that will receive multipart/form data and forward it to the lambda function
-   3. an S3 bucket to store the final images **this S3 bucket will be given public read access**
+   2. an API Gateway Endpoint that can receive multipart/form data and forward it to the lambda function
+   3. an S3 bucket to store the final images **for simplicity, this S3 bucket will be given public read access**
 
-### Building the memeify-lambda.jar file
+### Step 1. Building the memeify-lambda.jar file
 to build the memeify lambda jar file, cd into the project root directory and run the following maven command
     - `mvn clean package -pl memeify-lambda`
     - the jar artifact will be built and then saved at `memeify-lambda/target/memeify-lambda-0.1.jar`
 
-### Copy the lambda .jar file and Cloudformation to an S3 bucket
+### Step 2. Copy the lambda .jar file and Cloudformation to an S3 bucket
 - copy the `memeify-lambda-0.1.jar` file and the CloudFormation [template](aws/memeify-template.yaml) file to an
 s3 bucket of your choosing. This bucket is used as a staging area so that CloudFormation can find and deploy the 
 lambda function
     
-### Deploying to AWS
+### Step 3. Deploying to AWS
 Deploy Steps:
 1. make sure the `memeify-lambda-0.1.jar` file is built and uploaded to a S3 bucket (as described above)
 2. use CloudFormation (either the console or CLI) to create the memeify stack using the provided [template](aws/memeify-template.yaml):
@@ -73,7 +73,7 @@ Deploy Steps:
 I've provided two options for sending images to memeify:
 
 - [Option 1 use the example curl script](#option-1-use-curl) to POST your image and text to the API Gateway endpoint
-- [Option 2 use the example HTML Page](#option-2-use-HTML-Page) to submit the image and text to the API Gateway endpoint
+- [Option 2 use the example HTML Form](#option-2-use-HTML-Page) to submit the image and text to the API Gateway endpoint
 
 Both approaches will require you to edit the script (or html page) with the memeify API Gateway endpoint. 
 
@@ -105,11 +105,11 @@ displays the final, "memeified", image within the page. Before using the page, y
 
 
 ## Memeify Architecture
-Nothing too fancy here. Multipart/form-data is posted to API Gateway which will BASE64 encode the entire request 
-body and send it to the memeify lambda as a `ApiGatewayProxyEvent`.  The memeify lambda takes the request body, 
+Nothing too fancy here. Multipart/form-data is posted to API Gateway endpoint which will BASE64 encode the entire request 
+body and send it to the memeify lambda as a `ApiGatewayProxyEvent`.  The memeify lambda accepts the request body, 
 BASE64 decodes it, and then parses the image data and text strings from the multipart form-data. The image is 
-then "memeified" and written to a S3 bucket. Finally, a JSON response containing a URL to the "memeified" image 
-is returned by the lambda.  
+then "memeified" using Java's awt image/graphics libraries, and saved to an S3 bucket. Finally, a JSON response 
+containing a URL to the "memeified" image is returned by the lambda.  
  
 ### input
 The memeify lambda expects to receive three fields POSTed as multipart/form-data. The data must contain the following
@@ -136,7 +136,7 @@ Or, if an error occurs, JSON containing the error message will be returned:
 
 
 ## Notes and Observations
-This project started as a practice application to help me study for an AWS Developer Certification. Specifically,
+This project started as a practice application to help me study for the AWS Developer Certification. Specifically,
 I wanted to learn how AWS Proxy Integration worked between API-GateWay and Lambda (even though the exam does not go into 
 that level of detail).
 
